@@ -926,6 +926,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "provider-staking"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "lib-provider",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
