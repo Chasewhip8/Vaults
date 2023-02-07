@@ -36,18 +36,6 @@ We will start by defining the PDA's and data structs needed in the entre system,
 | `internal_phase`   | [VaultPhase](#VaultPhase) | Internal phase of yield provider        |
 | `provider_balance` | u64                       | Balance of all asset deposits and yield |
 
-### Vault 
-`owner: Controller`
-
-| Name              | Type                      | Description                                    |
-|-------------------|---------------------------|------------------------------------------------|
-| `owner`           | Pubkey                    | Public key of group which the vault belongs to |
-| `providers`       | Vec<Pubkey>               | List of [provider](#Provider) account pubkeys  |
-| `i_mint`          | Pubkey                    | Mint of I token                                |
-| `phase`           | [VaultPhase](#VaultPhase) | Phase of yield provider                        |
-| `start_timestamp` | i64                       | Active Phase start timestamp                   |
-| `end_timestamp`   | i64                       | Active Phase end timestamp                     |
-
 ### Group
 `owner: Controller`
 
@@ -60,9 +48,19 @@ We will start by defining the PDA's and data structs needed in the entre system,
 ## Structs and Enums
 ### VaultPhase
  - `ACTIVE`
- - `PENDING_EXPIRED` (only entered by vault provider)
+ - `PendingExpired` (only entered by vault provider)
  - `EXPIRED`
  - `PENDING_ACTIVE` (only entered by vault provider)
+
+### Vault
+| Name              | Type                      | Description                                    |
+|-------------------|---------------------------|------------------------------------------------|
+| `owner`           | Pubkey                    | Public key of group which the vault belongs to |
+| `providers`       | Vec<Pubkey>               | List of [provider](#Provider) account pubkeys  |
+| `i_mint`          | Pubkey                    | Mint of I token                                |
+| `phase`           | [VaultPhase](#VaultPhase) | Phase of yield provider                        |
+| `start_timestamp` | i64                       | Active Phase start timestamp                   |
+| `end_timestamp`   | i64                       | Active Phase end timestamp                     |
 
 ### VaultEntry
 | Name       | Type   | Description                          |

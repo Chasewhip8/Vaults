@@ -1,16 +1,12 @@
+use anchor_lang::prelude::*;
+
 mod instructions;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[derive(PartialEq, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
+#[repr(C)]
+pub enum VaultPhase {
+    PendingActive,
+    Active,
+    PendingExpired,
+    Expired
 }

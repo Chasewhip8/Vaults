@@ -9,3 +9,4 @@ path = "src/lib.rs"
 crate-type = ["lib"]
 
 [dependencies]
+anchor-lang = "0.26.0"
