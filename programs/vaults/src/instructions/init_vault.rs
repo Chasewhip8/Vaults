@@ -1,11 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
-use provider::VaultPhase::Expired;
+use adapter::VaultPhase::Expired;
 use crate::state::{Group, Vault};
 
 #[derive(Accounts)]
-#[instruction(start_timestamp: i64, end_timestamp: i64)]
 pub struct InitVault<'info> {
     #[account(mut)]
     authority: Signer<'info>,

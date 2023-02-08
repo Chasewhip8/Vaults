@@ -1,11 +1,15 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
+use crate::constants::VAULT_AUTHORITY;
 use crate::state::Group;
 
 #[derive(Accounts)]
 #[instruction(decimals: u8)]
 pub struct InitGroup<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        address = VAULT_AUTHORITY.key().as_ref()
+    )]
     payer: Signer<'info>,
 
     #[account(
