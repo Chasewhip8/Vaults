@@ -1,35 +1,42 @@
 # Vaults
+
+## The Great Idea
+Different programs on Solana provide ways for users to deposit their assets and receive yield over time. The downside to doing
+this is that the assets are locked inside that contract until withdrawn. Vaults will provide an intermediate layer between these
+programs in which the user will deposit and receive two tokens. A J-Token representing the deposited asset, and an I-Token 
+which will represent the yield the vault has accrued so far.
+
+Each vault will run for a predetermined time and at the end of the cycle the J-Tokens will be redeemable 1 to 1 with the deposited
+assets. And the I-Tokens will be redeemable for the yield generated. However, at any point while the vault is active a user can 
+withdraw by combining a J-Token with an I-Token.
+
 ## Architecture Layout
 ```
-                             Controller
+                            Vault Program
         _________________________|_______________________
         |                        |                      |
-   Yeild Provider          Yeild Provider         Yeild Provider
+  Adapter Program          Adapter Program        Adapter Program
         |                        |                      |
 Third Party Platform    Third Party Platform    Third Party Platform
 ```
 
 ### Third Party Platform
-Third party programs such as Raydium, Quarry, or another program which can provide deterministic deposit,
-withdraw, and generates yield.
+Programs such as Raydium Staking, Quarry and other third party services that generate some form of yield.
 
-### Yield Provider
-Provides the controller with a standardized interface to interact with and manage assets. This provides
-an abstraction layer which allows for moving the business logic of the vault outside the platform integration.
+### Adapter Program
+Provides a standardized instruction set of gated instructions to the Vault Program, abstracting away the implementation
+of the third party platform.
 
-All functions are gated and can only be invoked by the parent Controller.
-
-### Controller
-The main vault program which houses the business logic for tracking deposits and withdrawals of assets in addition to
-managing the lifecycle of all underlying yield providers. A recipe token will be minted for the underlying asset representation
-and another for the yield it has generated. Deposits into currently running vaults will return a ratio of the underlying asset
-and its yield token to maintain the deposit ratio.
+### Vault Program
+The main program which controls the main vault cycle and synchronizing all the provider programs for each vault. Users will
+interact with this program. They will receive two recipe tokens for deposits, one representing the underlying asset, and the 
+other representing the yield the vault generates.
 
 ## Data and Account Layout
 We will start by defining the PDA's and data structs needed in the entre system,
 
-### Provider 
-`owner: Yield Provider`
+### Adapter 
+`owner: Adapter Program`
 
 | Name               | Type                      | Description                             |
 |--------------------|---------------------------|-----------------------------------------|
@@ -37,36 +44,37 @@ We will start by defining the PDA's and data structs needed in the entre system,
 | `provider_balance` | u64                       | Balance of all asset deposits and yield |
 
 ### Group
-`owner: Controller`
+`owner: Vault Program`
 
-| Name             | Type                           | Description                                     |
-|------------------|--------------------------------|-------------------------------------------------|
-| `providers_info` | Vec<[VaultEntry](#VaultEntry)> | List of allowed providers where ratio adds to 1 |
-| `vaults`         | Vec<[Vault](#Vault)>           | List of vaults                                  |
-| `j_mint`         | Pubkey                         | Mint of J token                                 |
+| Name            | Type                           | Description                                     |
+|-----------------|--------------------------------|-------------------------------------------------|
+| `adapter_infos` | Vec<[VaultEntry](#VaultEntry)> | List of allowed providers where ratio adds to 1 |
+| `vaults`        | Vec<[Vault](#Vault)>           | List of vaults                                  |
+| `j_mint`        | Pubkey                         | Mint of J token                                 |
 
 ## Structs and Enums
 ### VaultPhase
- - `ACTIVE`
+ - `Active`
  - `PendingExpired` (only entered by vault provider)
- - `EXPIRED`
- - `PENDING_ACTIVE` (only entered by vault provider)
+ - `Expirec`
+ - `PendingActive` (only entered by vault provider)
+ - `Deactivated`
 
 ### Vault
 | Name              | Type                      | Description                                    |
 |-------------------|---------------------------|------------------------------------------------|
 | `owner`           | Pubkey                    | Public key of group which the vault belongs to |
-| `providers`       | Vec<Pubkey>               | List of [provider](#Provider) account pubkeys  |
+| `adapters`        | Vec<Pubkey>               | List of [adapter](#Adapter) account pubkeys    |
 | `i_mint`          | Pubkey                    | Mint of I token                                |
 | `phase`           | [VaultPhase](#VaultPhase) | Phase of yield provider                        |
 | `start_timestamp` | i64                       | Active Phase start timestamp                   |
 | `end_timestamp`   | i64                       | Active Phase end timestamp                     |
 
 ### VaultEntry
-| Name       | Type   | Description                          |
-|------------|--------|--------------------------------------|
-| `provider` | Pubkey | Allowed provider program public keys |
-| `ratio`    | f32    | Ratio of vault.                      |
+| Name      | Type   | Description                         |
+|-----------|--------|-------------------------------------|
+| `adapter` | Pubkey | Allowed adapter program public keys |
+| `ratio`   | f32    | Ratio of vault.                     |
 
 ## Technical Implementation
 Each vault group will consist of a list of providers of which are associated with a ratio of their 

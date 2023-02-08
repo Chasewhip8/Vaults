@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
-use provider::VaultPhase;
+use provider::VaultPhase::Expired;
 use crate::state::{Group, Vault};
 
 #[derive(Accounts)]
@@ -26,7 +26,6 @@ pub struct InitVault<'info> {
     i_mint: Box<Account<'info, Mint>>,
     j_mint: Box<Account<'info, Mint>>,
 
-    clock: Sysvar<'info, Clock>,
     system_program: Program<'info, System>,
     token_program: Program<'info, Token>
 }
@@ -47,7 +46,7 @@ impl<'info> InitVault<'info> {
             group: group.key(),
             i_mint: self.i_mint.key(),
             providers,
-            phase: VaultPhase::PendingActive,
+            phase: Expired, // Force into expired to go through the crank to active logic!
             start_timestamp,
             end_timestamp
         };
