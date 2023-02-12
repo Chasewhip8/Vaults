@@ -1,14 +1,16 @@
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use anchor_lang::prelude::{Account, Signer};
+use solana_program::clock::UnixTimestamp;
+use adapter::VaultPhase::Expired;
 use crate::constants::VAULT_AUTHORITY;
-use crate::state::Group;
+use crate::state::{Group, Vault};
 
 #[derive(Accounts)]
 pub struct EditVault<'info> {
     #[account(
         mut,
-        address = VAULT_AUTHORITY.key().as_ref()
+        address = VAULT_AUTHORITY.key()
     )]
     authority: Signer<'info>,
 
@@ -17,11 +19,27 @@ pub struct EditVault<'info> {
 }
 
 impl<'info> EditVault<'info> {
-    pub fn validate(self) -> Result<()> {
-        Ok(())
-    }
+    pub fn handle_and_validate(
+        &mut self,
+        vault_index: u8,
+        new_start_timestamp: Option<UnixTimestamp>,
+        new_end_timestamp: Option<UnixTimestamp>
+    ) -> Result<()> {
+        let vault: &mut Vault = self.group.vaults.get_mut(vault_index as usize).unwrap();
 
-    pub fn handle(&mut self) -> Result<()> {
+        if let Some(new_start_timestamp) = new_start_timestamp {
+            assert_eq!(vault.phase, Expired, "Cannot edit start timestamp while active.");
+
+            vault.start_timestamp = new_start_timestamp;
+        }
+
+        if let Some(new_end_timestamp) = new_end_timestamp {
+            vault.end_timestamp = new_end_timestamp;
+        }
+
+        // Assert timestamps are valid
+        assert!(vault.start_timestamp < vault.end_timestamp, "Vault timestamps cannot be out of order.");
+
         Ok(())
     }
 }

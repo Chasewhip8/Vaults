@@ -3,7 +3,8 @@ use anchor_lang::prelude::*;
 use std::mem;
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::solana_program::clock::UnixTimestamp;
-use provider::VaultPhase;
+use adapter::VaultPhase;
+use crate::constants::{MAX_PROVIDERS, MAX_VAULTS};
 
 #[account]
 #[derive(Default)]
@@ -14,8 +15,10 @@ pub struct Group {
 }
 
 impl Group {
-    pub const LEN: usize = 80;
-    const _LEN_CHECK: [u8; Group::LEN] = [0; mem::size_of::<Group>()];
+    pub const LEN: usize = 32 +
+        VaultEntry::LEN * MAX_PROVIDERS +
+        Vault::LEN * MAX_VAULTS
+    ;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -28,8 +31,23 @@ pub struct Vault {
     pub end_timestamp: UnixTimestamp,
 }
 
+impl Vault {
+    pub const LEN: usize = 32 +
+        32 +
+        32 * MAX_PROVIDERS +
+        1 +
+        8 +
+        8
+    ;
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct VaultEntry {
     pub provider: Pubkey,
     pub ratio: f32
+}
+
+impl VaultEntry {
+    pub const LEN: usize = 36;
+    const _LEN_CHECK: [u8; VaultEntry::LEN] = [0; mem::size_of::<Self>()];
 }

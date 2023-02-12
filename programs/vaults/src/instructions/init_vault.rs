@@ -36,11 +36,9 @@ impl<'info> InitVault<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, start_timestamp: UnixTimestamp, end_timestamp: UnixTimestamp, providers: &[AccountInfo]) -> Result<()> {
+    pub fn handle(&mut self, start_timestamp: UnixTimestamp, end_timestamp: UnixTimestamp, providers: Vec<Pubkey>) -> Result<()> {
         let group = &mut self.group;
-
-        let providers = providers.iter().map(|x| { *x.key }).collect::<Vec<_>>();
-
+        
         let vault = Vault {
             group: group.key(),
             i_mint: self.i_mint.key(),

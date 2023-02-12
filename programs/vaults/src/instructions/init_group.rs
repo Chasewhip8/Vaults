@@ -8,7 +8,7 @@ use crate::state::Group;
 pub struct InitGroup<'info> {
     #[account(
         mut,
-        address = VAULT_AUTHORITY.key().as_ref()
+        address = VAULT_AUTHORITY.key()
     )]
     payer: Signer<'info>,
 

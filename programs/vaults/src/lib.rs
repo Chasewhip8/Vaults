@@ -5,6 +5,7 @@ mod constants;
 use instructions::*;
 use anchor_lang::prelude::*;
 use solana_program::clock::UnixTimestamp;
+use crate::state::VaultEntry;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
@@ -21,17 +22,32 @@ pub mod vaults {
     pub fn init_vault(
         ctx: Context<InitVault>,
         start_timestamp: UnixTimestamp,
-        end_timestamp: UnixTimestamp
+        end_timestamp: UnixTimestamp,
+        providers: Vec<Pubkey>
     ) -> Result<()> {
-        ctx.accounts.handle(start_timestamp, end_timestamp, ctx.remaining_accounts)
+        ctx.accounts.handle(start_timestamp, end_timestamp, providers)
     }
 
-    #[access_control(ctx.accounts.validate())]
     pub fn edit_vault(
-        ctx: Context<InitVault>,
-        start_timestamp: UnixTimestamp,
-        end_timestamp: UnixTimestamp
+        ctx: Context<EditVault>,
+        vault_index: u8,
+        new_start_timestamp: Option<UnixTimestamp>,
+        new_end_timestamp: Option<UnixTimestamp>
     ) -> Result<()> {
-        ctx.accounts.handle(start_timestamp, end_timestamp, ctx.remaining_accounts)
+        ctx.accounts.handle_and_validate(vault_index, new_start_timestamp, new_end_timestamp)
+    }
+
+    #[access_control(ctx.accounts.validate(ctx.remaining_accounts))]
+    pub fn deposit(
+        ctx: Context<Deposit>
+    ) -> Result<()> {
+        ctx.accounts.handle(ctx.remaining_accounts)
+    }
+
+    #[access_control(ctx.accounts.validate(ctx.remaining_accounts))]
+    pub fn withdraw(
+        ctx: Context<Withdraw>
+    ) -> Result<()> {
+        ctx.accounts.handle(ctx.remaining_accounts)
     }
 }
