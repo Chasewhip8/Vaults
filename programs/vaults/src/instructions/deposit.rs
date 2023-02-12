@@ -8,7 +8,7 @@ pub struct Deposit<'info> {
 }
 
 impl<'info> Deposit<'info> {
-    pub fn validate(self, accounts: &[AccountInfo]) -> Result<()> {
+    pub fn validate(&self, accounts: &[AccountInfo]) -> Result<()> {
         Ok(())
     }
 

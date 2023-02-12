@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
-use anchor_lang::prelude::{Account, Signer};
+use anchor_lang::prelude::{Signer};
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
@@ -8,7 +8,7 @@ pub struct Withdraw<'info> {
 }
 
 impl<'info> Withdraw<'info> {
-    pub fn validate(self, accounts: &[AccountInfo]) -> Result<()> {
+    pub fn validate(&self, accounts: &[AccountInfo]) -> Result<()> {
         Ok(())
     }
 

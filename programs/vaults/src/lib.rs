@@ -18,6 +18,14 @@ pub mod vaults {
         ctx.accounts.handle()
     }
 
+    #[access_control(ctx.accounts.validate(&new_entries))]
+    pub fn edit_group(
+        ctx: Context<EditGroup>,
+        new_entries: Vec<VaultEntry>
+    ) -> Result<()> {
+        ctx.accounts.handle(new_entries)
+    }
+
     #[access_control(ctx.accounts.validate(start_timestamp, end_timestamp))]
     pub fn init_vault(
         ctx: Context<InitVault>,

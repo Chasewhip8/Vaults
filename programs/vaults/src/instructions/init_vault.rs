@@ -30,7 +30,7 @@ pub struct InitVault<'info> {
 }
 
 impl<'info> InitVault<'info> {
-    pub fn validate(self, start_timestamp: UnixTimestamp, end_timestamp: UnixTimestamp) -> Result<()> {
+    pub fn validate(&self, start_timestamp: UnixTimestamp, end_timestamp: UnixTimestamp) -> Result<()> {
         assert!(start_timestamp < end_timestamp, "Start timestamp after end timestamp!");
 
         Ok(())
