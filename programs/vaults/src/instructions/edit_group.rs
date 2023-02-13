@@ -19,8 +19,8 @@ pub struct EditGroup<'info> {
 
 impl<'info> EditGroup<'info> {
     pub fn validate(&self, vault_entries: &Vec<VaultEntry>) -> Result<()> {
-        for old_entry in &self.group.provider_infos {
-            assert!(vault_entries.contains(old_entry), "New provider list does not contain all existing providers!");
+        for old_entry in &self.group.adapter_infos {
+            assert!(vault_entries.contains(old_entry), "New adapters list does not contain all existing adapters!");
         }
 
         let mut new_ratio_total: f32 = 0.0;
@@ -37,7 +37,7 @@ impl<'info> EditGroup<'info> {
         let group = &mut self.group;
 
         group.state = Halted;
-        group.provider_infos = vault_entries;
+        group.adapter_infos = vault_entries;
 
         Ok(())
     }

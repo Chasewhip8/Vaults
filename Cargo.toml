@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "programs/*",
-    "adapter"
+    "adapter",
+    "external/marinade/libs/*"
 ]
 
 [profile.release]

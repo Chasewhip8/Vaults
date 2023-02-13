@@ -1,6 +1,7 @@
 mod instructions;
 mod state;
 mod constants;
+mod cpi;
 
 use instructions::*;
 use anchor_lang::prelude::*;
@@ -14,6 +15,7 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod vaults {
     use super::*;
 
+    #[access_control(ctx.accounts.validate())]
     pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
         ctx.accounts.handle()
     }
@@ -31,9 +33,9 @@ pub mod vaults {
         ctx: Context<InitVault>,
         start_timestamp: UnixTimestamp,
         end_timestamp: UnixTimestamp,
-        providers: Vec<Pubkey>
+        adapters: Vec<Pubkey>
     ) -> Result<()> {
-        ctx.accounts.handle(start_timestamp, end_timestamp, providers)
+        ctx.accounts.handle(start_timestamp, end_timestamp, adapters)
     }
 
     pub fn edit_vault(

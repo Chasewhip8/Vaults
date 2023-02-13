@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
+use solana_program::program_option::COption;
 use crate::constants::VAULT_AUTHORITY;
+use crate::cpi::cpi_transfer_mint_authority_to_group;
 use crate::state::Group;
 
 #[derive(Accounts)]
@@ -10,11 +12,11 @@ pub struct InitGroup<'info> {
         mut,
         address = VAULT_AUTHORITY.key()
     )]
-    payer: Signer<'info>,
+    vault_authority: Signer<'info>,
 
     #[account(
         init,
-        payer = payer,
+        payer = vault_authority,
         space = Group::LEN + 8,
         seeds = [
             b"Group".as_ref(),
@@ -26,9 +28,8 @@ pub struct InitGroup<'info> {
 
     #[account(
         init_if_needed,
-        payer = payer,
-        mint::authority = group,
-        mint::freeze_authority = group,
+        payer = vault_authority,
+        mint::authority = vault_authority,
         mint::decimals = decimals
     )]
     j_mint: Box<Account<'info, Mint>>,
@@ -38,11 +39,28 @@ pub struct InitGroup<'info> {
 }
 
 impl<'info> InitGroup<'info> {
+    pub fn validate(&self) -> Result<()> {
+        assert_eq!(self.j_mint.supply, 0);
+        assert_eq!(self.j_mint.freeze_authority, COption::None);
+
+        Ok(())
+    }
+
     pub fn handle(&mut self) -> Result<()> {
         let group = &mut self.group;
+
         group.j_mint = self.j_mint.key();
         group.vaults = Vec::new();
-        group.provider_infos = Vec::new();
+        group.adapter_infos = Vec::new();
+
+        // Set the authority of the mint to the group!
+        cpi_transfer_mint_authority_to_group(
+            &self.token_program,
+            self.group.key(),
+            &self.vault_authority,
+            &self.j_mint
+        );
+
         Ok(())
     }
 }

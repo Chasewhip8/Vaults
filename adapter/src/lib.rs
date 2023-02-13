@@ -11,7 +11,7 @@ pub enum VaultPhase {
     Active,
     PendingExpired,
     Expired,
-    Deactivated // Entered manually by the controller disabling a provider. (condition: ratio == 0)
+    Deactivated // Entered manually by the controller disabling a adapter. (condition: ratio == 0)
 }
 
 impl VaultPhase {

@@ -1,12 +1,12 @@
 [package]
-name = "provider-staking"
+name = "marinade-stake-adapter"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "provider_staking"
+name = "marinade_stake_adapter"
 
 [features]
 no-entrypoint = []
@@ -17,4 +17,5 @@ default = []
 
 [dependencies]
 anchor-lang = "0.26.0"
+marinade-anchor-sdk = { version = "0.1.0", path = "../../external/marinade/libs/marinade-anchor-sdk" }
 lib-adapter = { path = "../../adapter" }

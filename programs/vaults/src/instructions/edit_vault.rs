@@ -41,9 +41,9 @@ impl<'info> EditVault<'info> {
         // Assert timestamps are valid
         assert!(vault.start_timestamp < vault.end_timestamp, "Vault timestamps cannot be out of order.");
 
-        // Initialize Providers if missing
-        for provider_index in vault.providers.len()..group.provider_infos.len() {
-            // TODO initialize and set provider
+        // Initialize Adapters if missing
+        for adapter_index in vault.adapters.len()..group.adapter_infos.len() {
+            // TODO initialize and set adapter
         }
 
         Ok(())

@@ -1,0 +1,3 @@
+[submodule "external/marinade"]
+	path = external/marinade
+	url = https://github.com/Chasewhip8/marinade-sdk.git

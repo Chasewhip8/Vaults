@@ -4,7 +4,7 @@ use std::mem;
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::solana_program::clock::UnixTimestamp;
 use adapter::VaultPhase;
-use crate::constants::{MAX_PROVIDERS, MAX_VAULTS};
+use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
 use crate::state::Mode::Active;
 
 #[account]
@@ -12,13 +12,13 @@ use crate::state::Mode::Active;
 pub struct Group {
     pub state: Mode,
     pub j_mint: Pubkey,
-    pub provider_infos: Vec<VaultEntry>,
+    pub adapter_infos: Vec<VaultEntry>,
     pub vaults: Vec<Vault>
 }
 
 impl Group {
     pub const LEN: usize = 32 +
-        VaultEntry::LEN * MAX_PROVIDERS +
+        VaultEntry::LEN * MAX_ADAPTERS +
         Vault::LEN * MAX_VAULTS
     ;
 }
@@ -27,7 +27,7 @@ impl Group {
 pub struct Vault {
     pub group: Pubkey,
     pub i_mint: Pubkey,
-    pub providers: Vec<Pubkey>,
+    pub adapters: Vec<Pubkey>,
     pub phase: VaultPhase,
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
@@ -36,7 +36,7 @@ pub struct Vault {
 impl Vault {
     pub const LEN: usize = 32 +
         32 +
-        32 * MAX_PROVIDERS +
+        32 * MAX_ADAPTERS +
         1 +
         8 +
         8
@@ -45,7 +45,7 @@ impl Vault {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct VaultEntry {
-    pub provider: Pubkey,
+    pub adapter: Pubkey,
     pub ratio: f32
 }
 
@@ -56,7 +56,7 @@ impl VaultEntry {
 
 impl PartialEq for VaultEntry {
     fn eq(&self, other: &Self) -> bool {
-        self.provider.key().eq(&other.provider.key())
+        self.adapter.key().eq(&other.adapter.key())
     }
 }
 
