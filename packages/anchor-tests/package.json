@@ -1,6 +1,10 @@
 {
   "name": "anchor-tests",
+  "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "test": "ts-mocha -p ./tsconfig.json -t 1000000 *.ts"
+  },
   "devDependencies": {
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
