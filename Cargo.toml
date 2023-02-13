@@ -1,8 +1,9 @@
 [workspace]
 members = [
-    "programs/*",
     "adapter",
-    "external/marinade/libs/*"
+    "programs/vaults",
+    "programs/marinade-stake-adapter",
+    "external/marinade/libs/marinade-anchor-sdk"
 ]
 
 [profile.release]

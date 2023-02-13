@@ -4,6 +4,8 @@ use crate::VaultPhase::{Active, Expired};
 
 mod instructions;
 
+pub use instructions::*;
+
 #[derive(PartialEq, Debug, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
 pub enum VaultPhase {

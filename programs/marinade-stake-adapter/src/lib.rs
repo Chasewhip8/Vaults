@@ -1,4 +1,8 @@
 use anchor_lang::prelude::*;
+use adapter::*;
+use instructions::*;
+
+mod instructions;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
@@ -6,10 +10,5 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod marinade_stake_adapter {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        Ok(())
-    }
+    deposit_ix!();
 }
-
-#[derive(Accounts)]
-pub struct Initialize {}
