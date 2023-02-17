@@ -1,9 +1,13 @@
 use anchor_lang::prelude::*;
-use adapter::{deposit_ctx, IDeposit};
+use lib_adapter::Deposit;
 
-deposit_ctx!();
+pub trait DepositHandler {
+    fn validate(&self) -> Result<()>;
 
-impl <'info> IDeposit for Deposit<'info> {
+    fn handle(&mut self) -> Result<()>;
+}
+
+impl<'info> DepositHandler for Deposit<'info> {
     fn validate(&self) -> Result<()> {
         todo!()
     }

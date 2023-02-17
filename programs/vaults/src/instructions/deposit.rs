@@ -12,7 +12,7 @@ impl<'info> Deposit<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, accounts: &[AccountInfo]) -> Result<()> {
+    pub fn handle(&mut self, accounts: &[AccountInfo], adapter_accounts: Vec<u8>) -> Result<()> {
         Ok(())
     }
 }

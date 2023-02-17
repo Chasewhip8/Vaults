@@ -17,5 +17,6 @@ default = []
 
 [dependencies]
 anchor-lang = "0.26.0"
+anchor-spl = "0.26.0"
 marinade-anchor-sdk = { version = "0.1.0", path = "../../external/marinade/libs/marinade-anchor-sdk" }
-lib-adapter = { path = "../../adapter" }
+lib-adapter = { path = "../lib-adapter", features = ["cpi"] }

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
-use adapter::*;
 use instructions::*;
+use lib_adapter::*;
 
 mod instructions;
 
@@ -10,5 +10,9 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod marinade_stake_adapter {
     use super::*;
 
-    deposit_ix!();
+    pub fn deposit(
+        ctx: Context<Deposit>
+    ) -> Result<()> {
+        ctx.accounts.handle()
+    }
 }

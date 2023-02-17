@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use std::mem;
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::solana_program::clock::UnixTimestamp;
-use adapter::VaultPhase;
+use lib_adapter::VaultPhase;
 use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
 use crate::state::Mode::Active;
 
@@ -69,5 +69,21 @@ pub enum Mode {
 impl Default for Mode {
     fn default() -> Self {
         Active
+    }
+}
+
+type AccountOffsets = Vec<u8>;
+
+trait ToAccountInfos {
+    fn try_to_accounts(&self, accounts: &[AccountInfo], index: usize) -> &[AccountInfo];
+}
+
+impl ToAccountInfos for AccountOffsets {
+    fn try_to_accounts(&self, accounts: &[AccountInfo], index: usize) -> &[AccountInfo] {
+        let mut total_offset: u8 = 0;
+        for offset in &self[0..index] {
+            total_offset += offset;
+        }
+        &accounts[(total_offset as usize)..(self[total_offset as usize] as usize)]
     }
 }

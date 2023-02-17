@@ -49,15 +49,17 @@ pub mod vaults {
 
     #[access_control(ctx.accounts.validate(ctx.remaining_accounts))]
     pub fn deposit(
-        ctx: Context<Deposit>
+        ctx: Context<Deposit>,
+        adapter_accounts: Vec<u8>
     ) -> Result<()> {
-        ctx.accounts.handle(ctx.remaining_accounts)
+        ctx.accounts.handle(ctx.remaining_accounts, adapter_accounts)
     }
 
     #[access_control(ctx.accounts.validate(ctx.remaining_accounts))]
     pub fn withdraw(
-        ctx: Context<Withdraw>
+        ctx: Context<Withdraw>,
+        adapter_accounts: Vec<u8>
     ) -> Result<()> {
-        ctx.accounts.handle(ctx.remaining_accounts)
+        ctx.accounts.handle(ctx.remaining_accounts, adapter_accounts)
     }
 }

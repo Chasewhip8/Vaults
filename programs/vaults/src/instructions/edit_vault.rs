@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use anchor_lang::prelude::{Account, Signer};
 use solana_program::clock::UnixTimestamp;
-use adapter::VaultPhase::Expired;
+use lib_adapter::VaultPhase::Expired;
 use crate::constants::VAULT_AUTHORITY;
 use crate::state::{Group};
 

@@ -2,9 +2,17 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::UnixTimestamp;
 use crate::VaultPhase::{Active, Expired};
 
-mod instructions;
+pub mod instructions;
 
 pub use instructions::*;
+
+declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+
+#[program]
+mod t {
+
+}
+
 
 #[derive(PartialEq, Debug, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
