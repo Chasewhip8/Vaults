@@ -1,18 +1,7 @@
 use anchor_lang::prelude::*;
-use lib_adapter::Deposit;
+use crate::shared::*;
 
-pub trait DepositHandler {
-    fn validate(&self) -> Result<()>;
-
-    fn handle(&mut self) -> Result<()>;
-}
-
-impl<'info> DepositHandler for Deposit<'info> {
-    fn validate(&self) -> Result<()> {
-        todo!()
-    }
-
-    fn handle(&mut self) -> Result<()> {
-        todo!()
-    }
+#[derive(Accounts)]
+pub struct Deposit<'info> {
+    pub deposit: IDeposit<'info>
 }

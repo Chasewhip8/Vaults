@@ -1,3 +1,7 @@
+use anchor_lang::prelude::*;
+use anchor_lang::solana_program::clock::UnixTimestamp;
+use crate::VaultPhase::{Active, Expired};
+
 #[derive(PartialEq, Debug, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
 pub enum VaultPhase {
