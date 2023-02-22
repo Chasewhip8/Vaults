@@ -3,9 +3,9 @@ use anchor_lang::prelude::*;
 use std::mem;
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::solana_program::clock::UnixTimestamp;
-use lib_adapter::state::VaultPhase;
 use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
 use crate::state::Mode::Active;
+use crate::shared::*;
 
 #[account]
 #[derive(Default)]

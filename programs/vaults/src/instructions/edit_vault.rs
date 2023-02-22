@@ -2,9 +2,9 @@ use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use anchor_lang::prelude::{Account, Signer};
 use solana_program::clock::UnixTimestamp;
-use lib_adapter::state::VaultPhase::Expired;
 use crate::constants::VAULT_AUTHORITY;
 use crate::state::{Group};
+use crate::shared::*;
 
 #[derive(Accounts)]
 pub struct EditVault<'info> {
@@ -29,7 +29,7 @@ impl<'info> EditVault<'info> {
         let vault = group.vaults.get_mut(vault_index as usize).unwrap();
 
         if let Some(new_start_timestamp) = new_start_timestamp {
-            assert_eq!(vault.phase, Expired, "Cannot edit start timestamp while active.");
+            assert_eq!(vault.phase, VaultPhase::Expired, "Cannot edit start timestamp while active.");
 
             vault.start_timestamp = new_start_timestamp;
         }

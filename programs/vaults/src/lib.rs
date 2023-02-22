@@ -2,6 +2,7 @@ mod instructions;
 mod state;
 mod constants;
 mod cpi;
+mod shared;
 
 use instructions::*;
 use anchor_lang::prelude::*;

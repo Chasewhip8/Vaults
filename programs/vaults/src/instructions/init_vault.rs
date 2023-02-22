@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
 use solana_program::program_option::COption;
-use lib_adapter::state::VaultPhase::Expired;
+use lib_adapter::shared::state::VaultPhase::Expired;
 use crate::cpi::cpi_transfer_mint_authority_to_group;
 use crate::state::{Group, Vault};
 

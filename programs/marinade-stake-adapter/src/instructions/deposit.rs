@@ -3,5 +3,5 @@ use crate::shared::*;
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
-    pub deposit: IDeposit<'info>
+    pub deposit: IDeposit<'info>, // From symlink of lib-adapter
 }

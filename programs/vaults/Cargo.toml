@@ -19,4 +19,4 @@ default = []
 anchor-lang = { version = "0.26.0", features = ["init-if-needed"] }
 solana-program = "1.15.1"
 anchor-spl = "0.26.0"
-lib-adapter = { path = "../lib-adapter", features = ['cpi'] }
+lib-adapter = { path = "../../lib-adapter" }
