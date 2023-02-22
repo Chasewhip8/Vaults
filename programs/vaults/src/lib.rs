@@ -3,6 +3,7 @@ mod constants;
 mod cpis;
 mod instructions;
 mod state;
+mod adapter;
 
 use crate::state::VaultEntry;
 use anchor_lang::prelude::*;
@@ -11,7 +12,6 @@ use solana_program::clock::UnixTimestamp;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
-// Controller
 #[program]
 pub mod vaults {
     use super::*;

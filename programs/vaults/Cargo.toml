@@ -19,3 +19,4 @@ default = []
 anchor-lang = { version = "0.26.0", features = ["init-if-needed"] }
 solana-program = "1.15.1"
 anchor-spl = "0.26.0"
+cpi-interface = { version = "0.1.0", path = "../../external/cpi-interface" }
