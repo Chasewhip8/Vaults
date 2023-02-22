@@ -8,12 +8,21 @@ skip_core_tasks = true
 [tasks.init]
 script ='''
 cargo build --package lib-adapter || exit 1
-echo TEST4
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 LIB="./lib-adapter/src/_shared"
 
 for DESTINATION in ./programs/*/src; do
   cp -fru "$LIB" "$DESTINATION"
+done
+'''
+
+[tasks.clean]
+workspace = false
+script ='''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+
+for DESTINATION in ./programs/*/src; do
+  rm -rf "$DESTINATION/_shared"
 done
 '''
 
