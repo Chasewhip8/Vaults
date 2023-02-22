@@ -1,5 +1,5 @@
+use crate::_shared::*;
 use anchor_lang::prelude::*;
-use crate::shared::*;
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {

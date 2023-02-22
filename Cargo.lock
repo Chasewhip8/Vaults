@@ -1341,7 +1341,6 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "anchor-spl",
- "lib-adapter",
  "marinade-anchor-sdk",
 ]
 
@@ -2421,7 +2420,6 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "anchor-spl",
- "lib-adapter",
  "solana-program",
 ]
 

@@ -1,9 +1,9 @@
+use crate::constants::VAULT_AUTHORITY;
+use crate::cpis::cpi_transfer_mint_authority_to_group;
+use crate::state::Group;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::program_option::COption;
-use crate::constants::VAULT_AUTHORITY;
-use crate::cpi::cpi_transfer_mint_authority_to_group;
-use crate::state::Group;
 
 #[derive(Accounts)]
 #[instruction(decimals: u8)]
@@ -35,7 +35,7 @@ pub struct InitGroup<'info> {
     j_mint: Box<Account<'info, Mint>>,
 
     system_program: Program<'info, System>,
-    token_program: Program<'info, Token>
+    token_program: Program<'info, Token>,
 }
 
 impl<'info> InitGroup<'info> {
@@ -58,7 +58,7 @@ impl<'info> InitGroup<'info> {
             &self.token_program,
             self.group.key(),
             &self.vault_authority,
-            &self.j_mint
+            &self.j_mint,
         );
 
         Ok(())

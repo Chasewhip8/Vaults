@@ -1,6 +1,6 @@
+use crate::_shared::VaultPhase::{Active, Expired};
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::UnixTimestamp;
-use crate::shared::VaultPhase::{Active, Expired};
 
 #[derive(PartialEq, Debug, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
@@ -9,14 +9,14 @@ pub enum VaultPhase {
     Active,
     PendingExpired,
     Expired,
-    Deactivated // Entered manually by the controller disabling a adapter. (condition: ratio == 0)
+    Deactivated, // Entered manually by the controller disabling a adapter. (condition: ratio == 0)
 }
 
 impl VaultPhase {
     pub fn from_time(
         current_time: UnixTimestamp,
         vault_start_time: UnixTimestamp,
-        vault_end_time: UnixTimestamp
+        vault_end_time: UnixTimestamp,
     ) -> VaultPhase {
         if current_time >= vault_end_time || current_time < vault_start_time {
             return Expired;

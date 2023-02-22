@@ -1,11 +1,11 @@
 use anchor_lang::prelude::*;
 
-use std::mem;
-use anchor_lang::prelude::Pubkey;
-use anchor_lang::solana_program::clock::UnixTimestamp;
+use crate::_shared::VaultPhase;
 use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
 use crate::state::Mode::Active;
-use crate::shared::*;
+use anchor_lang::prelude::Pubkey;
+use anchor_lang::solana_program::clock::UnixTimestamp;
+use std::mem;
 
 #[account]
 #[derive(Default)]
@@ -13,14 +13,11 @@ pub struct Group {
     pub state: Mode,
     pub j_mint: Pubkey,
     pub adapter_infos: Vec<VaultEntry>,
-    pub vaults: Vec<Vault>
+    pub vaults: Vec<Vault>,
 }
 
 impl Group {
-    pub const LEN: usize = 32 +
-        VaultEntry::LEN * MAX_ADAPTERS +
-        Vault::LEN * MAX_VAULTS
-    ;
+    pub const LEN: usize = 32 + VaultEntry::LEN * MAX_ADAPTERS + Vault::LEN * MAX_VAULTS;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -34,19 +31,13 @@ pub struct Vault {
 }
 
 impl Vault {
-    pub const LEN: usize = 32 +
-        32 +
-        32 * MAX_ADAPTERS +
-        1 +
-        8 +
-        8
-    ;
+    pub const LEN: usize = 32 + 32 + 32 * MAX_ADAPTERS + 1 + 8 + 8;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct VaultEntry {
     pub adapter: Pubkey,
-    pub ratio: f32
+    pub ratio: f32,
 }
 
 impl VaultEntry {
@@ -63,7 +54,7 @@ impl PartialEq for VaultEntry {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub enum Mode {
     Active,
-    Halted
+    Halted,
 }
 
 impl Default for Mode {
@@ -75,11 +66,19 @@ impl Default for Mode {
 type AccountOffsets = Vec<u8>;
 
 trait ToAccountInfos {
-    fn try_to_accounts<'a>(&'a self, accounts: &'a [AccountInfo<'a>], index: usize) -> &'a [AccountInfo];
+    fn try_to_accounts<'a>(
+        &'a self,
+        accounts: &'a [AccountInfo<'a>],
+        index: usize,
+    ) -> &'a [AccountInfo];
 }
 
 impl ToAccountInfos for AccountOffsets {
-    fn try_to_accounts<'a>(&'a self, accounts: &'a [AccountInfo<'a>], index: usize) -> &'a [AccountInfo] {
+    fn try_to_accounts<'a>(
+        &'a self,
+        accounts: &'a [AccountInfo<'a>],
+        index: usize,
+    ) -> &'a [AccountInfo] {
         let mut total_offset: u8 = 0;
         for offset in &self[0..index] {
             total_offset += offset;

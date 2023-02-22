@@ -1,9 +1,9 @@
-use anchor_lang::prelude::*;
-use anchor_lang::Accounts;
-use anchor_lang::prelude::{Account, Signer};
 use crate::constants::VAULT_AUTHORITY;
-use crate::state::{Group, VaultEntry};
 use crate::state::Mode::Halted;
+use crate::state::{Group, VaultEntry};
+use anchor_lang::prelude::*;
+use anchor_lang::prelude::{Account, Signer};
+use anchor_lang::Accounts;
 
 #[derive(Accounts)]
 pub struct EditGroup<'info> {
@@ -20,7 +20,10 @@ pub struct EditGroup<'info> {
 impl<'info> EditGroup<'info> {
     pub fn validate(&self, vault_entries: &Vec<VaultEntry>) -> Result<()> {
         for old_entry in &self.group.adapter_infos {
-            assert!(vault_entries.contains(old_entry), "New adapters list does not contain all existing adapters!");
+            assert!(
+                vault_entries.contains(old_entry),
+                "New adapters list does not contain all existing adapters!"
+            );
         }
 
         let mut new_ratio_total: f32 = 0.0;
