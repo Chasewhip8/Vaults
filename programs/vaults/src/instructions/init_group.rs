@@ -4,6 +4,7 @@ use crate::state::Group;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::program_option::COption;
+use crate::state::Mode::Halted;
 
 #[derive(Accounts)]
 #[instruction(decimals: u8)]
@@ -48,7 +49,8 @@ impl<'info> InitGroup<'info> {
 
     pub fn handle(&mut self) -> Result<()> {
         let group = &mut self.group;
-
+        
+        group.state = Halted; // Initialize the group in a halted state
         group.j_mint = self.j_mint.key();
         group.vaults = Vec::new();
         group.adapter_infos = Vec::new();

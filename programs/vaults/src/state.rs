@@ -63,9 +63,7 @@ impl Default for Mode {
     }
 }
 
-type AccountOffsets = Vec<u8>;
-
-trait ToAccountInfos {
+pub trait ToAccountInfos {
     fn try_to_accounts<'a>(
         &'a self,
         accounts: &'a [AccountInfo<'a>],
@@ -73,7 +71,7 @@ trait ToAccountInfos {
     ) -> &'a [AccountInfo];
 }
 
-impl ToAccountInfos for AccountOffsets {
+impl ToAccountInfos for Vec<u8> {
     fn try_to_accounts<'a>(
         &'a self,
         accounts: &'a [AccountInfo<'a>],

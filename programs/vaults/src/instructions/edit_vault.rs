@@ -47,11 +47,6 @@ impl<'info> EditVault<'info> {
             "Vault timestamps cannot be out of order."
         );
 
-        // Initialize Adapters if missing
-        for adapter_index in vault.adapters.len()..group.adapter_infos.len() {
-            // TODO initialize and set adapter
-        }
-
         Ok(())
     }
 }

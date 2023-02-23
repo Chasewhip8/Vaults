@@ -1,0 +1,2 @@
+# Update Log
+- Decision made to not require cranking of the providers to update their internal bookkeeping before deposits. The time interval between each crank should be small enough for this to not affect anything. Can add later.
