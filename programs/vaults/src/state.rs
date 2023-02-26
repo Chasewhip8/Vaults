@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 
 use crate::_shared::VaultPhase;
 use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
-use crate::state::Mode::Active;
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::solana_program::clock::UnixTimestamp;
 use std::mem;
@@ -10,7 +9,6 @@ use std::mem;
 #[account]
 #[derive(Default)]
 pub struct Group {
-    pub state: Mode,
     pub j_mint: Pubkey,
     pub adapter_infos: Vec<VaultEntry>,
     pub vaults: Vec<Vault>,
@@ -24,10 +22,10 @@ impl Group {
 pub struct Vault {
     pub group: Pubkey,
     pub i_mint: Pubkey,
-    pub adapters: Vec<Pubkey>,
     pub phase: VaultPhase,
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
+    pub adapters_verified: bool
 }
 
 impl Vault {
@@ -48,18 +46,6 @@ impl VaultEntry {
 impl PartialEq for VaultEntry {
     fn eq(&self, other: &Self) -> bool {
         self.adapter.key().eq(&other.adapter.key())
-    }
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub enum Mode {
-    Active,
-    Halted,
-}
-
-impl Default for Mode {
-    fn default() -> Self {
-        Active
     }
 }
 

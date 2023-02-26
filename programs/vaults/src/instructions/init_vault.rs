@@ -1,10 +1,11 @@
-use crate::_shared::VaultPhase::Expired;
-use crate::cpis::cpi_transfer_mint_authority_to_group;
-use crate::state::{Group, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
 use solana_program::program_option::COption;
+
+use crate::_shared::VaultPhase::Expired;
+use crate::cpis::cpi_transfer_mint_authority_to_group;
+use crate::state::{Group, Vault};
 
 #[derive(Accounts)]
 pub struct InitVault<'info> {
@@ -50,18 +51,17 @@ impl<'info> InitVault<'info> {
     pub fn handle(
         &mut self,
         start_timestamp: UnixTimestamp,
-        end_timestamp: UnixTimestamp,
-        adapters: Vec<Pubkey>,
+        end_timestamp: UnixTimestamp
     ) -> Result<()> {
         let group = &mut self.group;
 
         let vault = Vault {
             group: group.key(),
             i_mint: self.i_mint.key(),
-            adapters,
             phase: Expired, // Force into expired to go through the crank to active logic!
             start_timestamp,
             end_timestamp,
+            adapters_verified: false
         };
 
         group.vaults.push(vault);

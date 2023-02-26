@@ -6,7 +6,6 @@ mod state;
 mod adapter;
 
 use crate::state::VaultEntry;
-use crate::state::Mode;
 use anchor_lang::prelude::*;
 use instructions::*;
 use solana_program::clock::UnixTimestamp;
@@ -15,7 +14,6 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
 pub mod vaults {
-    use crate::state::Mode;
     use super::*;
 
     #[access_control(ctx.accounts.validate())]
@@ -23,23 +21,21 @@ pub mod vaults {
         ctx.accounts.handle()
     }
 
-    #[access_control(ctx.accounts.validate(&maybe_new_entries, &maybe_new_mode, ctx.remaining_accounts))]
+    #[access_control(ctx.accounts.validate(&maybe_new_entries))]
     pub fn edit_group(
         ctx: Context<EditGroup>,
-        maybe_new_entries: Option<Vec<VaultEntry>>,
-        maybe_new_mode: Option<Mode>
+        maybe_new_entries: Option<Vec<VaultEntry>>
     ) -> Result<()> {
-        ctx.accounts.handle(maybe_new_entries, maybe_new_mode)
+        ctx.accounts.handle(maybe_new_entries)
     }
 
     #[access_control(ctx.accounts.validate(start_timestamp, end_timestamp))]
     pub fn init_vault(
         ctx: Context<InitVault>,
         start_timestamp: UnixTimestamp,
-        end_timestamp: UnixTimestamp,
-        adapters: Vec<Pubkey>,
+        end_timestamp: UnixTimestamp
     ) -> Result<()> {
-        ctx.accounts.handle(start_timestamp, end_timestamp, adapters)
+        ctx.accounts.handle(start_timestamp, end_timestamp)
     }
 
     pub fn edit_vault(
