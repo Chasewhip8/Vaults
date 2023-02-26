@@ -61,7 +61,8 @@ impl<'info> InitVault<'info> {
             phase: Expired, // Force into expired to go through the crank to active logic!
             start_timestamp,
             end_timestamp,
-            adapters_verified: false
+            adapters_verified: false,
+            deactivated: false // Do not start deactivated, adapters_verified takes care of it.
         };
 
         group.vaults.push(vault);

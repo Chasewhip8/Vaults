@@ -25,7 +25,8 @@ pub struct Vault {
     pub phase: VaultPhase,
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
-    pub adapters_verified: bool
+    pub adapters_verified: bool,
+    pub deactivated: bool
 }
 
 impl Vault {

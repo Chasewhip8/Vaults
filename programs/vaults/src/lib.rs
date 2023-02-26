@@ -43,17 +43,31 @@ pub mod vaults {
         vault_index: u8,
         new_start_timestamp: Option<UnixTimestamp>,
         new_end_timestamp: Option<UnixTimestamp>,
+        maybe_deactivated: Option<bool>
     ) -> Result<()> {
-        ctx.accounts.handle_and_validate(vault_index, new_start_timestamp, new_end_timestamp)
+        ctx.accounts.handle_and_validate(
+            vault_index,
+            new_start_timestamp,
+            new_end_timestamp,
+            maybe_deactivated
+        )
     }
 
-    #[access_control(ctx.accounts.validate(ctx.remaining_accounts))]
-    pub fn deposit(ctx: Context<Deposit>, adapter_accounts: Vec<u8>) -> Result<()> {
-        ctx.accounts.handle(ctx.remaining_accounts, adapter_accounts)
+    #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]
+    pub fn deposit(
+        ctx: Context<Deposit>,
+        amount: u64,
+        adapter_accounts: Vec<u8>
+    ) -> Result<()> {
+        ctx.accounts.handle(amount, ctx.remaining_accounts, adapter_accounts)
     }
 
-    #[access_control(ctx.accounts.validate(ctx.remaining_accounts))]
-    pub fn withdraw(ctx: Context<Withdraw>, adapter_accounts: Vec<u8>) -> Result<()> {
-        ctx.accounts.handle(ctx.remaining_accounts, adapter_accounts)
+    #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]
+    pub fn withdraw(
+        ctx: Context<Withdraw>,
+        amount: u64,
+        adapter_accounts: Vec<u8>
+    ) -> Result<()> {
+        ctx.accounts.handle(amount, ctx.remaining_accounts, adapter_accounts)
     }
 }
