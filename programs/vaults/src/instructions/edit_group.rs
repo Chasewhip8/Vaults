@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::prelude::{Account, Signer};
 
 use crate::constants::VAULT_AUTHORITY;
-use crate::state::{Group, VaultEntry};
+use crate::state::{Group, AdapterEntry};
 
 #[derive(Accounts)]
 pub struct EditGroup<'info> {
@@ -18,7 +18,7 @@ pub struct EditGroup<'info> {
 }
 
 impl<'info> EditGroup<'info> {
-    pub fn validate(&self, maybe_new_entries: &Option<Vec<VaultEntry>>) -> Result<()> {
+    pub fn validate(&self, maybe_new_entries: &Option<Vec<AdapterEntry>>) -> Result<()> {
         if let Some(new_entries) = maybe_new_entries {
             for old_entry in &self.group.adapter_infos {
                 assert!(
@@ -38,7 +38,7 @@ impl<'info> EditGroup<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, maybe_new_entries: Option<Vec<VaultEntry>>) -> Result<()> {
+    pub fn handle(&mut self, maybe_new_entries: Option<Vec<AdapterEntry>>) -> Result<()> {
         let group = &mut self.group;
 
         if let Some(new_entries) = maybe_new_entries {

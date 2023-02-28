@@ -1,11 +1,11 @@
-mod _shared;
 mod constants;
 mod cpis;
 mod instructions;
 mod state;
 mod adapter;
+mod math;
 
-use crate::state::VaultEntry;
+use crate::state::AdapterEntry;
 use anchor_lang::prelude::*;
 use instructions::*;
 use solana_program::clock::UnixTimestamp;
@@ -24,7 +24,7 @@ pub mod vaults {
     #[access_control(ctx.accounts.validate(&maybe_new_entries))]
     pub fn edit_group(
         ctx: Context<EditGroup>,
-        maybe_new_entries: Option<Vec<VaultEntry>>
+        maybe_new_entries: Option<Vec<AdapterEntry>>
     ) -> Result<()> {
         ctx.accounts.handle(maybe_new_entries)
     }
@@ -52,14 +52,15 @@ pub mod vaults {
             maybe_deactivated
         )
     }
-
-    #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]
-    pub fn deposit(
-        ctx: Context<Deposit>,
+    
+    pub fn deposit<'info>(
+        ctx: Context<'_, '_, '_, 'info, Deposit<'info>>,
+        vault: u8,
         amount: u64,
-        adapter_accounts: Vec<u8>
+        adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.handle(amount, ctx.remaining_accounts, adapter_accounts)
+        ctx.accounts.validate(vault, amount, ctx.remaining_accounts)?;
+        ctx.accounts.handle(vault, amount, adapter_accounts, ctx.remaining_accounts)
     }
 
     #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]

@@ -3,9 +3,9 @@ use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
 use solana_program::program_option::COption;
 
-use crate::_shared::VaultPhase::Expired;
 use crate::cpis::cpi_transfer_mint_authority_to_group;
 use crate::state::{Group, Vault};
+use crate::state::VaultPhase::Expired;
 
 #[derive(Accounts)]
 pub struct InitVault<'info> {
@@ -37,8 +37,8 @@ impl<'info> InitVault<'info> {
         start_timestamp: UnixTimestamp,
         end_timestamp: UnixTimestamp,
     ) -> Result<()> {
-        assert_eq!(self.j_mint.supply, 0);
-        assert_eq!(self.j_mint.freeze_authority, COption::None);
+        assert_eq!(self.i_mint.supply, 0);
+        assert_eq!(self.i_mint.freeze_authority, COption::None);
 
         assert!(
             start_timestamp < end_timestamp,
@@ -56,7 +56,6 @@ impl<'info> InitVault<'info> {
         let group = &mut self.group;
 
         let vault = Vault {
-            group: group.key(),
             i_mint: self.i_mint.key(),
             phase: Expired, // Force into expired to go through the crank to active logic!
             start_timestamp,
@@ -65,6 +64,7 @@ impl<'info> InitVault<'info> {
             deactivated: false // Do not start deactivated, adapters_verified takes care of it.
         };
 
+        // Specifically push here, we do not want to shift the index of other vaults, ever!
         group.vaults.push(vault);
 
         // Set the authority of the mint to the group!

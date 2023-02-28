@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "lib-adapter",
     "programs/*",
     "external/marinade/libs/marinade-anchor-sdk",
     "external/cpi-interface"

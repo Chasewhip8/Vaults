@@ -1,4 +1,3 @@
-use crate::_shared::*;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
