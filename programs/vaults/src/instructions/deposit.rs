@@ -78,23 +78,14 @@ impl<'info> Deposit<'info> {
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>();
 
-            let provider_balance = adapter_abi::cpi::deposit(
-                CpiContext::new_with_signer(
-                    adapter_program.to_account_info(),
-                    adapter_abi::cpi::accounts::IDeposit {
-                        _ensure_vaults_signed: self.group.to_account_info(),
-                        authority: self.authority.to_account_info()
-                    },
-                    &[&gen_group_signer_seeds!(self.group)[..]]
-                ).with_remaining_accounts(accounts),
-                // Adapter Deposit Parameters
-                adapter_amount
-            )?;
+            let provider_balance = self.adapter_deposit(adapter_program, accounts, adapter_amount)
+                .expect("Deposit adapter CPI instruction failed!")
+                .get();
 
             let return_amount = calc_deposit_return_adapter(
                 adapter_amount,
                 self.i_mint.supply,
-                provider_balance.get()
+                provider_balance
             );
 
             assert!(return_amount > 0, "Invalid return amount from adapter deposit of 0");
@@ -109,6 +100,21 @@ impl<'info> Deposit<'info> {
         self.mint_to_user(&self.i_mint, &self.i_account, total_return_amount)?;
 
         Ok(())
+    }
+
+    fn adapter_deposit(&self, adapter_program: &AccountInfo<'info>, accounts: Vec<AccountInfo<'info>>, adapter_amount: u64) -> Result<adapter_abi::cpi::Return<u64>> {
+        adapter_abi::cpi::deposit(
+            CpiContext::new_with_signer(
+                adapter_program.to_account_info(),
+                adapter_abi::cpi::accounts::IDeposit {
+                    _ensure_vaults_signed: self.group.to_account_info(),
+                    authority: self.authority.to_account_info()
+                },
+                &[&gen_group_signer_seeds!(self.group)[..]]
+            ).with_remaining_accounts(accounts),
+            // Adapter Deposit Parameters
+            adapter_amount
+        )
     }
 
     fn mint_to_user(&self, mint: &Account<'info, Mint>, destination_account: &Account<'info, TokenAccount>, amount: u64) -> Result<()> {
