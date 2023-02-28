@@ -11,10 +11,22 @@ pub struct Group {
     pub j_mint: Pubkey,
     pub adapter_infos: Vec<AdapterEntry>,
     pub vaults: Vec<Vault>,
+    pub bump: u8
 }
 
 impl Group {
     pub const LEN: usize = 32 + AdapterEntry::LEN * MAX_ADAPTERS + Vault::LEN * MAX_VAULTS;
+}
+
+#[macro_export]
+macro_rules! gen_group_signer_seeds {
+    ($group:expr) => {
+        &[
+             b"Group".as_ref(),
+             $group.j_mint.key().as_ref(),
+             &[$group.bump],
+        ]
+    };
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

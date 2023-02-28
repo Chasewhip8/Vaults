@@ -2,7 +2,6 @@ mod constants;
 mod cpis;
 mod instructions;
 mod state;
-mod adapter;
 mod math;
 
 use crate::state::AdapterEntry;
@@ -18,7 +17,7 @@ pub mod vaults {
 
     #[access_control(ctx.accounts.validate())]
     pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
-        ctx.accounts.handle()
+        ctx.accounts.handle(*ctx.bumps.get("group").unwrap())
     }
 
     #[access_control(ctx.accounts.validate(&maybe_new_entries))]

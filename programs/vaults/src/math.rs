@@ -3,11 +3,7 @@ use std::convert::TryInto;
 // Thank you Bonfida for some nice FP32 math utils examples.
 // https://github.com/Bonfida/bonfida-utils/blob/main/utils/src/fp_math.rs
 
-/// result is a fp32 of the minimum tick size
-#[inline(always)]
-pub fn fp32_calc_min_tick_sizes(base_decimals: u8) -> u64 {
-    1 << (32 - base_decimals)
-}
+pub const FP_32_ONE: u64 = 1 << 32;
 
 pub trait FP32 {
     fn fp32_mul_floor(self, b_fp32: u64) -> Option<u64>;

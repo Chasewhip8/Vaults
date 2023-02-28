@@ -1,17 +1,11 @@
-use anchor_lang::prelude::*;
+use crate::*;
 
 #[derive(Accounts)]
-#[instruction(j_mint: Pubkey, bump: u8)]
 pub struct IDeposit<'info> {
     #[account(
-        seeds = [
-            b"Group".as_ref(),
-            j_mint.as_ref()
-        ],
-        bump = bump,
-        seeds::program = other_program.key()
+        owner = VAULTS_PROGRAM.key()
     )]
-    pub _ensure_signed: Signer<'info>,
+    pub _ensure_vaults_signed: Signer<'info>,
     pub authority: Signer<'info>,
 }
 

@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::prelude::{Account, Signer};
 
 use crate::constants::VAULT_AUTHORITY;
+use crate::math::FP_32_ONE;
 use crate::state::{Group, AdapterEntry};
 
 #[derive(Accounts)]
@@ -27,12 +28,12 @@ impl<'info> EditGroup<'info> {
                 );
             }
 
-            let mut new_ratio_total= 0.0;
+            let mut new_ratio_total_fp32= 0;
             for new_entry in new_entries {
-                new_ratio_total += new_entry.ratio;
+                new_ratio_total_fp32 += new_entry.ratio_fp32;
             }
 
-            assert_eq!(new_ratio_total, 1.0, "Ratio does not add to 1.");
+            assert_eq!(new_ratio_total_fp32, FP_32_ONE, "Ratio does not add to 1.");
         }
 
         Ok(())

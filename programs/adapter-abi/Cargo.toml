@@ -13,7 +13,8 @@ no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint"]
-default = []
+default = ["no-entrypoint", "cpi"]
 
 [dependencies]
 anchor-lang = "0.26.0"
+solana-program = "1.15.1"

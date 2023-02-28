@@ -1,14 +1,15 @@
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::adapter;
+use crate::gen_group_signer_seeds;
 use crate::math::FP32;
 use crate::state::{Group, ToAccountInfos};
 use crate::state::VaultPhase::Active;
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
-    deposit: IDeposit<'info>,
+    #[account(mut)]
+    authority: Signer<'info>,
 
     group: Box<Account<'info, Group>>,
 
@@ -20,9 +21,9 @@ pub struct Deposit<'info> {
 
     #[account(
         init_if_needed,
-        payer = deposit.authority,
+        payer = authority,
         token::mint = j_mint,
-        token::authority = deposit.authority
+        token::authority = authority
     )]
     j_account: Account<'info, TokenAccount>,
 
@@ -31,9 +32,9 @@ pub struct Deposit<'info> {
 
     #[account(
         init_if_needed,
-        payer = deposit.authority,
+        payer = authority,
         token::mint = i_mint,
-        token::authority = deposit.authority
+        token::authority = authority
     )]
     i_account: Account<'info, TokenAccount>,
 
@@ -75,12 +76,15 @@ impl<'info> Deposit<'info> {
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>();
 
-            adapter::deposit(
-                adapter_program.to_account_info(),
-                self.deposit.clone(),
-                adapter_amount,
-                Option::from(accounts),
-                None
+            adapter_abi::cpi::deposit(
+                CpiContext::new_with_signer(
+                    adapter_program.to_account_info(),
+                    adapter_abi::cpi::accounts::IDeposit {
+                        _ensure_vaults_signed: self.group.to_account_info(),
+                        authority: self.authority.to_account_info()
+                    },
+                    &[&gen_group_signer_seeds!(self.group)[..]]
+                )
             )?;
         }
 

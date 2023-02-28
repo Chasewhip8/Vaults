@@ -47,12 +47,13 @@ impl<'info> InitGroup<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self) -> Result<()> {
+    pub fn handle(&mut self, bump: u8) -> Result<()> {
         let group = &mut self.group;
 
         group.j_mint = self.j_mint.key();
         group.vaults = Vec::new();
         group.adapter_infos = Vec::new();
+        group.bump = bump;
 
         // Set the authority of the mint to the group!
         cpi_transfer_mint_authority_to_group(
