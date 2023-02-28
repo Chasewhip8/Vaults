@@ -1,8 +1,9 @@
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
+use solana_program::entrypoint::ProgramResult;
 use crate::gen_group_signer_seeds;
-use crate::math::FP32;
+use crate::math::{calc_deposit_return, calc_deposit_return_adapter, FP32};
 use crate::state::{Group, ToAccountInfos};
 use crate::state::VaultPhase::Active;
 
@@ -25,7 +26,7 @@ pub struct Deposit<'info> {
         token::mint = j_mint,
         token::authority = authority
     )]
-    j_account: Account<'info, TokenAccount>,
+    j_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
     i_mint: Box<Account<'info, Mint>>, // Verified below
@@ -36,17 +37,17 @@ pub struct Deposit<'info> {
         token::mint = i_mint,
         token::authority = authority
     )]
-    i_account: Account<'info, TokenAccount>,
+    i_account: Box<Account<'info, TokenAccount>>,
 
     token_program: Program<'info, Token>,
     system_program: Program<'info, System>
 }
 
 impl<'info> Deposit<'info> {
-    pub fn validate(&self, vault: u8, amount: u64, accounts: &[AccountInfo]) -> Result<()> {
+    pub fn validate(&self, vault_index: u8, amount: u64) -> Result<()> {
         assert_ne!(amount, 0, "Deposit amount cannot be 0");
 
-        let vault = self.group.vaults.get(vault as usize).unwrap();
+        let vault = self.group.vaults.get(vault_index as usize).unwrap();
         assert!(!vault.deactivated, "Vault is deactivated.");
         assert!(!vault.adapters_verified, "Vault has unverified adapters!");
         assert_eq!(vault.phase, Active, "Vault can only be deposited into while in active mode!");
@@ -57,11 +58,12 @@ impl<'info> Deposit<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, vault_index: u8, amount: u64, adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
-        let vault = self.group.vaults.get(vault_index as usize).unwrap();
+    pub fn handle(&mut self, amount: u64, adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let mut total_return_amount: u64 = 0;
-        // Execute deposit instruction on all providers ensuring all succeed, summing the returned ij mint amounts.
 
+        msg!("Depositing {} to adapters.", amount);
+
+        // Execute deposit instruction on all providers ensuring all succeed, summing the returned ij mint amounts.
         let adapter_count = self.group.adapter_infos.len();
         for (index, adapter_entry) in self.group.adapter_infos.iter().enumerate() {
             // Calculate the actual amount passed into adapter program based on the ratio
@@ -76,7 +78,7 @@ impl<'info> Deposit<'info> {
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>();
 
-            adapter_abi::cpi::deposit(
+            let provider_balance = adapter_abi::cpi::deposit(
                 CpiContext::new_with_signer(
                     adapter_program.to_account_info(),
                     adapter_abi::cpi::accounts::IDeposit {
@@ -84,20 +86,43 @@ impl<'info> Deposit<'info> {
                         authority: self.authority.to_account_info()
                     },
                     &[&gen_group_signer_seeds!(self.group)[..]]
-                )
+                ).with_remaining_accounts(accounts),
+                // Adapter Deposit Parameters
+                adapter_amount
             )?;
+
+            let return_amount = calc_deposit_return_adapter(
+                adapter_amount,
+                self.i_mint.supply,
+                provider_balance.get()
+            );
+
+            assert!(return_amount > 0, "Invalid return amount from adapter deposit of 0");
+
+            total_return_amount += return_amount;
         }
 
+        msg!("Minting {} I and J tokens to user.", total_return_amount);
+
         // Mint the i and j tokens to the user.
+        self.mint_to_user(&self.j_mint, &self.j_account, total_return_amount)?;
+        self.mint_to_user(&self.i_mint, &self.i_account, total_return_amount)?;
 
         Ok(())
     }
+
+    fn mint_to_user(&self, mint: &Account<'info, Mint>, destination_account: &Account<'info, TokenAccount>, amount: u64) -> Result<()> {
+        mint_to(
+            CpiContext::new_with_signer(
+                self.token_program.to_account_info(),
+                MintTo {
+                    mint: mint.to_account_info(),
+                    to: destination_account.to_account_info(),
+                    authority: self.group.to_account_info()
+                },
+                &[&gen_group_signer_seeds!(self.group)[..]]
+            ),
+            amount
+        )
+    }
 }
-
-
-
-
-
-
-
-

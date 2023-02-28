@@ -51,10 +51,22 @@ pub fn calc_deposit_return(
     provider_ratio_fp32: u64,
     provider_balance: u64
 ) -> u64 {
-    deposit_amount
+    calc_deposit_return_adapter(
+        deposit_amount
+            .fp32_mul_floor(provider_ratio_fp32)
+            .unwrap(),
+        i_supply,
+        provider_balance
+    )
+}
+
+pub fn calc_deposit_return_adapter(
+    adapter_amount: u64,
+    i_supply: u64,
+    provider_balance: u64
+) -> u64 {
+    adapter_amount
         .checked_mul(i_supply)
-        .unwrap()
-        .fp32_mul_floor(provider_ratio_fp32)
         .unwrap()
         .checked_div(provider_balance)
         .unwrap()

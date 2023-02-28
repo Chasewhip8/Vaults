@@ -51,15 +51,15 @@ pub mod vaults {
             maybe_deactivated
         )
     }
-    
+
+    #[access_control(ctx.accounts.validate(vault_index, amount))]
     pub fn deposit<'info>(
         ctx: Context<'_, '_, '_, 'info, Deposit<'info>>,
-        vault: u8,
+        vault_index: u8,
         amount: u64,
         adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.validate(vault, amount, ctx.remaining_accounts)?;
-        ctx.accounts.handle(vault, amount, adapter_accounts, ctx.remaining_accounts)
+        ctx.accounts.handle(amount, adapter_accounts, ctx.remaining_accounts)
     }
 
     #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]
