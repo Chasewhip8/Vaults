@@ -33,13 +33,15 @@ macro_rules! gen_group_signer_seeds {
 pub struct Vault {
     pub i_mint: Pubkey,
     pub phase: VaultPhase,
+    pub j_balance: u64, // TODO figure out if we need to reset this at the start of a cycle
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
     pub adapters_verified: bool
 }
 
 impl Vault {
-    pub const LEN: usize = 32 + 32 + 32 * MAX_ADAPTERS + 1 + 8 + 8;
+    pub const LEN: usize = 64;
+    const _LEN_CHECK: [u8; Vault::LEN] = [0; mem::size_of::<Self>()];
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

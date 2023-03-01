@@ -57,7 +57,14 @@ impl<'info> EditVault<'info> {
             assert_eq!(accounts.len(), group.adapter_infos.len(), "Incorrect amount of adapters to verify!");
 
             for (index, adapter_info) in group.adapter_infos.iter().enumerate() {
-                let expected_account = Pubkey::create_program_address(&[b"Adapter", group.key().as_ref()], &adapter_info.adapter).unwrap();
+                let expected_account = Pubkey::create_program_address(
+                    &[
+                        b"Adapter",
+                        vault.i_mint.as_ref()
+                    ],
+                    &adapter_info.adapter
+                ).unwrap();
+
                 let account = accounts.get(index).unwrap();
 
                 assert_eq!(account.key(), expected_account, "Expected adapter account address mismatch, maybe wrong order?");

@@ -1,9 +1,8 @@
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
-use solana_program::entrypoint::ProgramResult;
 use crate::gen_group_signer_seeds;
-use crate::math::{calc_deposit_return, calc_deposit_return_adapter, FP32};
+use crate::math::{calc_deposit_return_adapter, FP32};
 use crate::state::{Group, ToAccountInfos};
 use crate::state::VaultPhase::Active;
 
@@ -12,13 +11,13 @@ pub struct Deposit<'info> {
     #[account(mut)]
     authority: Signer<'info>,
 
+    #[account(
+        has_one = j_mint
+    )]
     group: Box<Account<'info, Group>>,
 
-    #[account(
-        mut,
-        address = group.j_mint
-    )]
-    j_mint: Box<Account<'info, Mint>>, // Verifying it is the same mint inside of the group ensures everything else.
+    #[account(mut)]
+    j_mint: Box<Account<'info, Mint>>, // Verifying it is the same mint inside of the group above ensures everything else.
 
     #[account(
         init_if_needed,
@@ -57,7 +56,7 @@ impl<'info> Deposit<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, amount: u64, adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
+    pub fn handle(&mut self, vault_index: u8, amount: u64, adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let mut total_return_amount: u64 = 0;
 
         msg!("Depositing {} to adapters.", amount);
@@ -97,6 +96,10 @@ impl<'info> Deposit<'info> {
         // Mint the i and j tokens to the user.
         self.mint_to_user(&self.j_mint, &self.j_account, total_return_amount)?;
         self.mint_to_user(&self.i_mint, &self.i_account, total_return_amount)?;
+
+        // Add the additional J tokens we just minted to the outstanding balance of the vault
+        let vault = self.group.vaults.get_mut(vault_index as usize).unwrap();
+        vault.j_balance += total_return_amount;
 
         Ok(())
     }

@@ -58,7 +58,7 @@ pub mod vaults {
         amount: u64,
         adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.handle(amount, adapter_accounts, ctx.remaining_accounts)
+        ctx.accounts.handle(vault_index, amount, adapter_accounts, ctx.remaining_accounts)
     }
 
     #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]
