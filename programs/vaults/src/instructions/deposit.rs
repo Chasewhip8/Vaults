@@ -48,7 +48,6 @@ impl<'info> Deposit<'info> {
         assert_ne!(amount, 0, "Deposit amount cannot be 0");
 
         let vault = self.group.vaults.get(vault_index as usize).unwrap();
-        assert!(!vault.deactivated, "Vault is deactivated.");
         assert!(!vault.adapters_verified, "Vault has unverified adapters!");
         assert_eq!(vault.phase, Active, "Vault can only be deposited into while in active mode!");
 

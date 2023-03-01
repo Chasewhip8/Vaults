@@ -16,7 +16,7 @@ pub mod vaults {
     use super::*;
 
     #[access_control(ctx.accounts.validate())]
-    pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
+    pub fn init_group(ctx: Context<InitGroup>, decimals: u8) -> Result<()> {
         ctx.accounts.handle(*ctx.bumps.get("group").unwrap())
     }
 
@@ -37,18 +37,17 @@ pub mod vaults {
         ctx.accounts.handle(start_timestamp, end_timestamp)
     }
 
-    pub fn edit_vault(
-        ctx: Context<EditVault>,
+    pub fn edit_vault<'info>(
+        ctx: Context<'_, '_, '_, 'info, EditVault<'info>>,
         vault_index: u8,
         new_start_timestamp: Option<UnixTimestamp>,
-        new_end_timestamp: Option<UnixTimestamp>,
-        maybe_deactivated: Option<bool>
+        new_end_timestamp: Option<UnixTimestamp>
     ) -> Result<()> {
         ctx.accounts.handle_and_validate(
             vault_index,
             new_start_timestamp,
             new_end_timestamp,
-            maybe_deactivated
+            ctx.remaining_accounts
         )
     }
 

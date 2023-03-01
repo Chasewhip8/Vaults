@@ -35,8 +35,7 @@ pub struct Vault {
     pub phase: VaultPhase,
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
-    pub adapters_verified: bool,
-    pub deactivated: bool
+    pub adapters_verified: bool
 }
 
 impl Vault {
@@ -66,8 +65,7 @@ pub enum VaultPhase {
     PendingActive,
     Active,
     PendingExpired,
-    Expired,
-    Deactivated, // Entered manually by the controller disabling a adapter. (condition: ratio == 0)
+    Expired
 }
 
 impl VaultPhase {

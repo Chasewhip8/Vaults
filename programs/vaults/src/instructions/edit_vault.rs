@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use anchor_lang::Accounts;
 use anchor_lang::prelude::*;
 use anchor_lang::prelude::{Account, Signer};
@@ -25,20 +26,10 @@ impl<'info> EditVault<'info> {
         vault_index: u8,
         maybe_new_start_timestamp: Option<UnixTimestamp>,
         maybe_new_end_timestamp: Option<UnixTimestamp>,
-        maybe_deactivated: Option<bool>,
+        accounts: &[AccountInfo<'info>]
     ) -> Result<()> {
         let group = &mut self.group;
         let vault = group.vaults.get_mut(vault_index as usize).unwrap();
-
-        // Allow modification of the phase from expired to deactivated
-        if let Some(deactivated) = maybe_deactivated {
-            assert_eq!(
-                vault.phase, Expired,
-                "Cannot enter deactivated mode unless expired."
-            );
-
-            vault.deactivated = deactivated;
-        }
 
         if let Some(new_start_timestamp) = maybe_new_start_timestamp {
             assert_eq!(
@@ -58,6 +49,23 @@ impl<'info> EditVault<'info> {
             vault.start_timestamp < vault.end_timestamp,
             "Vault timestamps cannot be out of order."
         );
+
+        if !vault.adapters_verified {
+            msg!("Verifying Adapters");
+            vault.adapters_verified = true; // Set up here to allow borrow checker to release vaults reference.
+
+            assert_eq!(accounts.len(), group.adapter_infos.len(), "Incorrect amount of adapters to verify!");
+
+            for (index, adapter_info) in group.adapter_infos.iter().enumerate() {
+                let expected_account = Pubkey::create_program_address(&[b"Adapter", group.key().as_ref()], &adapter_info.adapter).unwrap();
+                let account = accounts.get(index).unwrap();
+
+                assert_eq!(account.key(), expected_account, "Expected adapter account address mismatch, maybe wrong order?");
+                assert_eq!(account.owner.key(), adapter_info.adapter, "Adapter owner mismatch!"); // Most likely redundant but why not.
+            }
+
+            msg!("Verified Adapters!");
+        }
 
         Ok(())
     }

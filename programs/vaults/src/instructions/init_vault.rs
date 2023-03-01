@@ -60,8 +60,7 @@ impl<'info> InitVault<'info> {
             phase: Expired, // Force into expired to go through the crank to active logic!
             start_timestamp,
             end_timestamp,
-            adapters_verified: false,
-            deactivated: false // Do not start deactivated, adapters_verified takes care of it.
+            adapters_verified: false // Start disabled to ensure adapters get initialized, edit_vault will flip this
         };
 
         // Specifically push here, we do not want to shift the index of other vaults, ever!
