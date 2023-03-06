@@ -56,10 +56,10 @@ const YourVaultsCard = (props: Props) => {
       <div className="flex flex-1 flex-row justify-between items-start">
         <div className="flex flex-col">
           <h2 className="text-2xl font-bold">Your Vaults</h2>
-          <p className="text-gray-400">Track your investments</p>
+          <p className="text-gray-400">Track your staked assets</p>
         </div>
         <PaddedIcon
-          className="cursor-pointer hover:shadow-lg hover:scale-110 transition-all duration-200"
+          className="cursor-pointer hover:shadow-lg hover:scale-110 transition-all duration-200 active:scale-100"
           icon={ArrowsPointingOutIcon}
           size="large"
         />

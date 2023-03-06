@@ -1,4 +1,3 @@
-import Card from "@components/Card";
 import OverviewCard from "@components/Dashboard/OverviewCard";
 import YourVaultsCard from "@components/Dashboard/YourVaultsCard";
 import Layout from "@components/Layout";
@@ -7,13 +6,18 @@ import {
   FireIcon,
   UserGroupIcon,
 } from "@heroicons/react/20/solid";
+import YourPortfolioCard from "@components/Dashboard/YourPortfolioCard";
+import VaultCard from "@components/Dashboard/VaultCard";
 
 const Home = () => {
   return (
-    <Layout className="flex flex-col space-y-6 py-10">
+    <Layout className="flex flex-col space-y-6 pb-8">
       <section>
-        <h2 className="text-2xl font-bold text-white pb-3">Overview</h2>
-        <div className="flex pb-4 space-x-8">
+        <h2 className="text-2xl font-bold text-white">Overview</h2>
+        <p className="text-gray-500 pb-3">
+          An overview of the latest trends and statistics
+        </p>
+        <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
           <OverviewCard
             title="Total Members of the Flock"
             icon={UserGroupIcon}
@@ -56,13 +60,28 @@ const Home = () => {
         </div>
       </section>
       <section>
-        <h2 className="text-2xl font-bold text-white pb-3">Your Holdings</h2>
-        <div className="flex flex-row space-x-8 max-h-96">
-          <Card className="w-2/5">
-            <h2 className="text-2xl font-bold">Your Portfolio</h2>
-            <p className="text-gray-400">Investments over time</p>
-          </Card>
+        <h2 className="text-2xl font-bold text-white">Your Holdings</h2>
+        <p className="text-gray-500 pb-3">Your portfolio and staked assets</p>
+        <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8 lg:max-h-96">
+          <YourPortfolioCard className="lg:w-2/5" />
           <YourVaultsCard />
+        </div>
+      </section>
+      <section>
+        <h2 className="text-2xl font-bold text-white">Available Vaults</h2>
+        <p className="text-gray-500 pb-3">
+          These vaults are available and can be staked at anytime
+        </p>
+        <div className="space-y-8">
+          <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
+            <VaultCard />
+            <VaultCard />
+            <VaultCard />
+          </div>
+          <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
+            <VaultCard />
+            <VaultCard />
+          </div>
         </div>
       </section>
     </Layout>

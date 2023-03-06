@@ -12,7 +12,7 @@ const TableHeader = (props: Props) => {
       scope="col"
       className={classNames(
         props.className,
-        "py-3.5 text-left text-sm font-bold text-white last:pr-4"
+        "py-3.5 text-left text-sm font-bold text-white pr-3 last:pr-4 whitespace-nowrap"
       )}
     >
       {props.children}

@@ -27,14 +27,14 @@ const PaddedIcon = (props: PaddedIconProps) => {
         backgroundColor,
         {
           "p-1": size === "small",
-          "p-3": size === "large",
+          "p-2.5": size === "large",
         }
       )}
     >
       <Icon
         className={classNames(iconColor, {
           "h-4 w-4": size === "small",
-          "h-6 w-6": size === "large",
+          "h-5 w-5": size === "large",
         })}
       />
     </div>
