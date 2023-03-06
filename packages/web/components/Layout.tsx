@@ -1,6 +1,4 @@
-import { Bars3Icon, LinkIcon } from "@heroicons/react/20/solid";
 import classNames from "classnames";
-import Image from "next/image";
 import React from "react";
 import Banner from "./Banner";
 import Navbar from "./Navbar";

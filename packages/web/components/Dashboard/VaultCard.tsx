@@ -1,15 +1,23 @@
 import { ArrowsPointingOutIcon } from "@heroicons/react/20/solid";
+import classNames from "classnames";
 import React from "react";
 import Badge from "../Badge";
 import Card from "../Card";
 import PaddedIcon from "../PaddedIcon";
 import VaultProgressBar from "./VaultProgressBar";
 
-type Props = {};
+type Props = {
+  className?: string;
+};
 
 const VaultCard = (props: Props) => {
   return (
-    <Card className="flex flex-col flex-1">
+    <Card
+      className={classNames(
+        props.className,
+        "flex flex-col flex-1 cursor-pointer hover:scale-105 transition-all duration-200 active:scale-100"
+      )}
+    >
       <div className="flex flex-row justify-between items-start">
         <div className="flex flex-col space-y-2">
           <h3 className="text-xl font-extrabold">

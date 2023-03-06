@@ -9,38 +9,47 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/20/solid";
 import React from "react";
+import ExandableVaultTableRow from "./ExandableVaultTableRow";
+
+export type VaultTableRow = {
+  vault: string;
+  expiration: string;
+  amount: string;
+  amountDollar: string;
+  percentChange: string;
+};
 
 const tableRows = [
   {
-    vault: "J-Sol-Eth",
+    vault: "Sol-Eth",
     expiration: "(expand)",
     amount: "153.32",
     amountDollar: "$1,532.32",
     percentChange: "5.32%",
   },
   {
-    vault: "J-SFXS-USDC",
+    vault: "SFXS-USDC",
     expiration: "(expand)",
     amount: "931.25",
     amountDollar: "$10,123.56",
     percentChange: "3.72%",
   },
   {
-    vault: "J-BTC-USDT",
+    vault: "BTC-USDT",
     expiration: "(expand)",
     amount: "140.02",
     amountDollar: "$2,312.98",
     percentChange: "2.15%",
   },
   {
-    vault: "J-DAI-USDT",
+    vault: "DAI-USDT",
     expiration: "(expand)",
     amount: "876.81",
     amountDollar: "$11,975.27",
     percentChange: "4.28%",
   },
   {
-    vault: "J-SOL-USDC",
+    vault: "SOL-USDC",
     expiration: "(expand)",
     amount: "327.98",
     amountDollar: "$6,429.81",
@@ -75,18 +84,7 @@ const YourVaultsCard = (props: Props) => {
           <TableHeader key="% Change">% Change</TableHeader>,
         ]}
         rows={tableRows.map((row) => (
-          <TableRow key="1">
-            <TableCell>
-              <button className="cursor-pointer hover:scale-125 transition-all duration-200">
-                <ChevronRightIcon className="h-5 w-5" />
-              </button>
-            </TableCell>
-            <TableCell className="font-bold">{row.vault}</TableCell>
-            <TableCell className="italic">{row.expiration}</TableCell>
-            <TableCell>{row.amount}</TableCell>
-            <TableCell>{row.amountDollar}</TableCell>
-            <TableCell>{row.percentChange}</TableCell>
-          </TableRow>
+          <ExandableVaultTableRow key={row.vault} row={row} />
         ))}
       />
     </Card>
