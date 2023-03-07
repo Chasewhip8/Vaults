@@ -1,6 +1,6 @@
 import TableCell from "@components/Table/TableCell";
 import TableRow from "@components/Table/TableRow";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import classNames from "classnames";
 import React, { useState } from "react";
 import { VaultTableRow } from "./YourVaultsCard";

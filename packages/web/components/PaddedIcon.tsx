@@ -7,6 +7,7 @@ export type PaddedIconProps = {
   backgroundColor?: string;
   iconColor?: string;
   className?: string;
+  onClick?: () => void;
 };
 
 const PaddedIcon = (props: PaddedIconProps) => {
@@ -16,11 +17,13 @@ const PaddedIcon = (props: PaddedIconProps) => {
     iconColor = "text-white",
     backgroundColor = "bg-cyan-600",
     className,
+    onClick,
   } = props;
   const Icon = icon;
 
   return (
     <div
+      onClick={onClick}
       className={classNames(
         className,
         "flex text-white rounded-full",

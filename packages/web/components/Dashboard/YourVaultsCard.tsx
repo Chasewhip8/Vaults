@@ -1,15 +1,10 @@
 import Card from "@components/Card";
 import PaddedIcon from "@components/PaddedIcon";
 import Table from "@components/Table/Table";
-import TableCell from "@components/Table/TableCell";
 import TableHeader from "@components/Table/TableHeader";
-import TableRow from "@components/Table/TableRow";
-import {
-  ArrowsPointingOutIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
+import { ArrowsPointingOutIcon } from "@heroicons/react/20/solid";
 import React from "react";
-import ExandableVaultTableRow from "./ExandableVaultTableRow";
+import ExpandableVaultTableRow from "./ExpandableVaultTableRow";
 
 export type VaultTableRow = {
   vault: string;
@@ -55,6 +50,76 @@ const tableRows = [
     amountDollar: "$6,429.81",
     percentChange: "8.91%",
   },
+  {
+    vault: "LINK-USDC",
+    expiration: "(expand)",
+    amount: "250.45",
+    amountDollar: "$3,227.69",
+    percentChange: "6.14%",
+  },
+  {
+    vault: "ETH-USDT",
+    expiration: "(expand)",
+    amount: "526.10",
+    amountDollar: "$8,124.93",
+    percentChange: "1.92%",
+  },
+  {
+    vault: "USDT-USDC",
+    expiration: "(expand)",
+    amount: "735.24",
+    amountDollar: "$735.24",
+    percentChange: "0.00%",
+  },
+  {
+    vault: "BTC-ETH",
+    expiration: "(expand)",
+    amount: "670.23",
+    amountDollar: "$11,295.98",
+    percentChange: "3.85%",
+  },
+  {
+    vault: "AAVE-USDC",
+    expiration: "(expand)",
+    amount: "102.90",
+    amountDollar: "$1,672.43",
+    percentChange: "4.71%",
+  },
+  {
+    vault: "SOL-SRM",
+    expiration: "(expand)",
+    amount: "186.53",
+    amountDollar: "$4,822.18",
+    percentChange: "2.81%",
+  },
+  {
+    vault: "USDT-DAI",
+    expiration: "(expand)",
+    amount: "1093.76",
+    amountDollar: "$1,093.76",
+    percentChange: "0.00%",
+  },
+  {
+    vault: "SRM-USDT",
+    expiration: "(expand)",
+    amount: "589.23",
+    amountDollar: "$10,188.64",
+    percentChange: "7.06%",
+  },
+  {
+    vault: "ETH-DAI",
+    expiration: "(expand)",
+    amount: "78.31",
+    amountDollar: "$1,351.86",
+    percentChange: "3.56%",
+  },
+  {
+    vault: "FTT-USDT",
+    expiration: "(expand)",
+    amount: "381.45",
+    amountDollar: "$4,762.43",
+    percentChange: "1.94%",
+  },
 ];
 
 type Props = {};
@@ -84,7 +149,7 @@ const YourVaultsCard = (props: Props) => {
           <TableHeader key="% Change">% Change</TableHeader>,
         ]}
         rows={tableRows.map((row) => (
-          <ExandableVaultTableRow key={row.vault} row={row} />
+          <ExpandableVaultTableRow key={row.vault} row={row} />
         ))}
       />
     </Card>

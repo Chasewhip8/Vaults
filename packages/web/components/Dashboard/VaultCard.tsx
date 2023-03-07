@@ -8,14 +8,16 @@ import VaultProgressBar from "./VaultProgressBar";
 
 type Props = {
   className?: string;
+  onClick?: () => void;
 };
 
 const VaultCard = (props: Props) => {
   return (
     <Card
+      onClick={props.onClick}
       className={classNames(
         props.className,
-        "flex flex-col flex-1 cursor-pointer hover:scale-105 transition-all duration-200 active:scale-100"
+        "group flex flex-col flex-1 cursor-pointer hover:scale-105 transition-all duration-200 active:scale-100"
       )}
     >
       <div className="flex flex-row justify-between items-start">
@@ -29,7 +31,7 @@ const VaultCard = (props: Props) => {
           </div>
         </div>
         <PaddedIcon
-          className="cursor-pointer hover:shadow-lg hover:scale-110 transition-all duration-200 active:scale-100"
+          className="cursor-pointer group-hover:shadow-lg group-hover:scale-125 transition-all duration-200 active:scale-100"
           icon={ArrowsPointingOutIcon}
           size="large"
         />
