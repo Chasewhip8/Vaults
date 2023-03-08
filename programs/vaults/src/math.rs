@@ -32,10 +32,6 @@ fn test() {
     assert_eq!(124345678765454_u64.fp32_div(45654 << 32).unwrap(), 2723653541);
     assert_eq!(124345678765454_u64.fp32_div(6787654 << 32).unwrap(), 18319389);
 
-    // fp32_calc_min_tick_sizes
-    assert_eq!(fp32_calc_min_tick_sizes(0), 1 << 32);
-    assert_eq!(fp32_calc_min_tick_sizes(1), 1 << 31);
-
     // fp32_mul
     assert_eq!(
         5676543_u64.fp32_mul_floor(6787654 << 32).unwrap(),
@@ -43,21 +39,6 @@ fn test() {
     );
     assert_eq!(12454_u64.fp32_mul_floor(45654 << 32).unwrap(), 568574916);
     assert_eq!(5_u64.fp32_mul_floor(1 << 31).unwrap(), 2);
-}
-
-pub fn calc_deposit_return(
-    deposit_amount: u64,
-    i_supply: u64,
-    provider_ratio_fp32: u64,
-    provider_balance: u64
-) -> u64 {
-    calc_deposit_return_adapter(
-        deposit_amount
-            .fp32_mul_floor(provider_ratio_fp32)
-            .unwrap(),
-        i_supply,
-        provider_balance
-    )
 }
 
 pub fn calc_deposit_return_adapter(

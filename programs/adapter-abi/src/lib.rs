@@ -34,7 +34,7 @@ pub mod adapter_abi {
     /// * `ctx`: Instruction Context
     /// * `amount`: The adapter adjusted redeem amount
     ///
-    /// returns: Result<(), Error>, where the u64 is the providers updated balance used to calculate minted receipt assets
+    /// returns: Result<(), Error>
     pub fn redeem(ctx: Context<IRedeem>, amount: u64) -> Result<()> {
         msg!("Entered adapter_abi::redeem({}) dummy instruction", amount);
         Ok(())
@@ -45,6 +45,14 @@ pub mod adapter_abi {
     /// returns: Result<u64, Error>, where the u64 is the providers updated balance used to calculate minted receipt assets
     pub fn crank(ctx: Context<ICrank>) -> Result<u64> {
         msg!("Entered adapter_abi::crank dummy instruction");
+        Ok(1)
+    }
+
+    /// Instruction to initialize the provider for a vault.
+    ///
+    /// returns: Result<(), Error>
+    pub fn initialize(ctx: Context<IInitialize>) -> Result<u64> {
+        msg!("Entered adapter_abi::initialize dummy instruction");
         Ok(1)
     }
 }

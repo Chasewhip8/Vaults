@@ -61,12 +61,23 @@ pub mod vaults {
         ctx.accounts.handle(vault_index, amount, adapter_accounts, ctx.remaining_accounts)
     }
 
-    #[access_control(ctx.accounts.validate(amount, ctx.remaining_accounts))]
-    pub fn withdraw(
-        ctx: Context<Withdraw>,
-        amount: u64,
+    #[access_control(ctx.accounts.validate(vault_index, amount_i, amount_j, ctx.remaining_accounts))]
+    pub fn redeem(
+        ctx: Context<Redeem>,
+        vault_index: u8,
+        amount_i: u64,
+        amount_j: u64,
+        crank_adapter_accounts: Vec<Vec<u8>>,
+        deposit_adapter_accounts: Vec<Vec<u8>>
+    ) -> Result<()> {
+        ctx.accounts.handle(vault_index, amount_i, amount_j, crank_adapter_accounts, deposit_adapter_accounts, ctx.remaining_accounts)
+    }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn crank(
+        ctx: Context<Crank>,
         adapter_accounts: Vec<u8>
     ) -> Result<()> {
-        ctx.accounts.handle(amount, ctx.remaining_accounts, adapter_accounts)
+        ctx.accounts.handle(ctx.remaining_accounts)
     }
 }

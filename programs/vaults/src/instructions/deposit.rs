@@ -1,11 +1,14 @@
+use std::cmp::min;
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
+use crate::cpis::adapter_deposit;
 use crate::gen_group_signer_seeds;
 use crate::math::{calc_deposit_return_adapter, FP32};
 use crate::state::{Group, ToAccountInfos};
 use crate::state::VaultPhase::Active;
 
+// Note: The Redeem and Deposit contexts are almost identical if not identical.
 #[derive(Accounts)]
 pub struct Deposit<'info> {
     #[account(mut)]
@@ -76,20 +79,23 @@ impl<'info> Deposit<'info> {
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>();
 
-            let provider_balance = self.adapter_deposit(adapter_program, accounts, adapter_amount)
+            let provider_balance = adapter_deposit(&self.group, &self.authority, adapter_program, accounts, adapter_amount)
                 .expect("Deposit adapter CPI instruction failed!")
                 .get();
 
             let return_amount = calc_deposit_return_adapter(
                 adapter_amount,
                 self.i_mint.supply,
-                provider_balance
+                provider_balance // TODO determine if provider_balance should be before or after deposit
             );
 
             assert!(return_amount > 0, "Invalid return amount from adapter deposit of 0");
 
             total_return_amount += return_amount;
         }
+
+        // Prevent minting more than 1:1 for a deposit, this is due to excess i_supply when multiple cycles occur.
+        total_return_amount = min(total_return_amount, amount);
 
         msg!("Minting {} I and J tokens to user.", total_return_amount);
 
@@ -102,21 +108,6 @@ impl<'info> Deposit<'info> {
         vault.j_balance += total_return_amount;
 
         Ok(())
-    }
-
-    fn adapter_deposit(&self, adapter_program: &AccountInfo<'info>, accounts: Vec<AccountInfo<'info>>, adapter_amount: u64) -> Result<adapter_abi::cpi::Return<u64>> {
-        adapter_abi::cpi::deposit(
-            CpiContext::new_with_signer(
-                adapter_program.to_account_info(),
-                adapter_abi::cpi::accounts::IDeposit {
-                    _ensure_vaults_signed: self.group.to_account_info(),
-                    authority: self.authority.to_account_info()
-                },
-                &[&gen_group_signer_seeds!(self.group)[..]]
-            ).with_remaining_accounts(accounts),
-            // Adapter Deposit Parameters
-            adapter_amount
-        )
     }
 
     fn mint_to_user(&self, mint: &Account<'info, Mint>, destination_account: &Account<'info, TokenAccount>, amount: u64) -> Result<()> {
