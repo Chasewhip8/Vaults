@@ -16,7 +16,7 @@ pub fn cpi_transfer_mint_authority_to_group<'info>(
             SetAuthority {
                 current_authority: vault_authority.to_account_info(),
                 account_or_mint: mint.to_account_info(),
-            },
+            }
         ),
         AuthorityType::MintTokens,
         Option::from(group),
@@ -51,7 +51,7 @@ pub fn adapter_redeem<'info>(
     adapter_program: &AccountInfo<'info>,
     accounts: Vec<AccountInfo<'info>>,
     adapter_amount: u64
-) -> Result<adapter_abi::cpi::Return<u64>> {
+) -> Result<()> {
     adapter_abi::cpi::redeem(
         CpiContext::new_with_signer(
             adapter_program.to_account_info(),
@@ -68,19 +68,12 @@ pub fn adapter_redeem<'info>(
 
 pub fn adapter_crank<'info>(
     adapter_program: &AccountInfo<'info>,
-    accounts: Vec<AccountInfo<'info>>,
-    adapter_amount: u64
+    accounts: Vec<AccountInfo<'info>>
 ) -> Result<adapter_abi::cpi::Return<u64>> {
-    adapter_abi::cpi::redeem(
-        CpiContext::new_with_signer(
+    adapter_abi::cpi::crank(
+        CpiContext::new(
             adapter_program.to_account_info(),
-            adapter_abi::cpi::accounts::IDeposit {
-                _ensure_vaults_signed: group.to_account_info(),
-                authority: authority.to_account_info()
-            },
-            &[&gen_group_signer_seeds!(group)[..]]
-        ).with_remaining_accounts(accounts),
-        // Adapter Deposit Parameters
-        adapter_amount
+            adapter_abi::cpi::accounts::ICrank {}
+        ).with_remaining_accounts(accounts)
     )
 }

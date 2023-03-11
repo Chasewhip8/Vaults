@@ -4,6 +4,8 @@ use anchor_lang::prelude::*;
 use anchor_lang::prelude::Signer;
 use anchor_spl::token::{burn, Burn, Mint, Token, TokenAccount};
 use anchor_spl::token::spl_token::instruction::burn_checked;
+use crate::cpis::{adapter_crank, adapter_redeem};
+use crate::math::{calc_deposit_return_adapter, calc_redeem_return, FP32};
 use crate::state::{Group, ToAccountInfos};
 use crate::state::VaultPhase::{Active, Expired};
 
@@ -87,14 +89,33 @@ impl<'info> Redeem<'info> {
             let adapter_program = accounts.get(index).unwrap();
             assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
 
-            let accounts = crank_adapter_accounts
+            let crank_accounts = crank_adapter_accounts
                 .try_indexes_to_data(accounts, index, Option::from(adapter_count))
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>();
 
-            let provider_balance = adapter_deposit(&self.group, &self.authority, adapter_program, accounts, adapter_amount)
-                .expect("Deposit adapter CPI instruction failed!")
+            let provider_balance = adapter_crank(adapter_program, crank_accounts)
+                .expect("Crank adapter CPI instruction failed!")
                 .get();
+
+            // TODO check this I am so tired
+            let i_provider_balance = provider_balance - vault.j_balance;
+            let i_returns = calc_redeem_return(
+                amount_i,
+                self.i_mint.supply,
+                vault.fp32_fee_rate,
+                adapter_entry.ratio_fp32,
+                i_provider_balance
+            );
+            let provider_request_amount = amount_j.fp32_div(adapter_entry.ratio_fp32).unwrap() + i_returns;
+
+            let redeem_accounts = redeem_adapter_accounts
+                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
+                .iter().map(|info| info.to_account_info())
+                .collect::<Vec<_>>();
+
+            adapter_redeem(&self.group, &self.authority, adapter_program, redeem_accounts, provider_request_amount)
+                .expect("Redeem adapter CPI instruction failed!");
         }
 
         Ok(())

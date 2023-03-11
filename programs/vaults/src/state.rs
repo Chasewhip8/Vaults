@@ -36,7 +36,8 @@ pub struct Vault {
     pub j_balance: u64, // TODO figure out if we need to reset this at the start of a cycle
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
-    pub adapters_verified: bool
+    pub adapters_verified: bool,
+    pub fp32_fee_rate: u64
 }
 
 impl Vault {
