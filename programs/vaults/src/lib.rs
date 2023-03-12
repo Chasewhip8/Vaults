@@ -3,6 +3,7 @@ mod cpis;
 mod instructions;
 mod state;
 mod math;
+mod error;
 
 use crate::state::AdapterEntry;
 use anchor_lang::prelude::*;
@@ -32,9 +33,10 @@ pub mod vaults {
     pub fn init_vault(
         ctx: Context<InitVault>,
         start_timestamp: UnixTimestamp,
-        end_timestamp: UnixTimestamp
+        end_timestamp: UnixTimestamp,
+        fp32_fee_rate: u64
     ) -> Result<()> {
-        ctx.accounts.handle(start_timestamp, end_timestamp)
+        ctx.accounts.handle(start_timestamp, end_timestamp, fp32_fee_rate)
     }
 
     pub fn edit_vault<'info>(
@@ -62,8 +64,8 @@ pub mod vaults {
     }
 
     #[access_control(ctx.accounts.validate(vault_index, amount_i, amount_j, ctx.remaining_accounts))]
-    pub fn redeem(
-        ctx: Context<Redeem>,
+    pub fn redeem<'info>(
+        ctx: Context<'_, '_, '_, 'info, Redeem<'info>>,
         vault_index: u8,
         amount_i: u64,
         amount_j: u64,
@@ -74,10 +76,10 @@ pub mod vaults {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn crank(
-        ctx: Context<Crank>,
-        adapter_accounts: Vec<u8>
+    pub fn crank<'info>(
+        ctx: Context<'_, '_, '_, 'info, Crank<'info>>,
+        adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.handle(ctx.remaining_accounts)
+        ctx.accounts.handle(adapter_accounts, ctx.remaining_accounts)
     }
 }

@@ -4,6 +4,7 @@ use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
 use anchor_lang::prelude::Pubkey;
 use anchor_lang::solana_program::clock::UnixTimestamp;
 use std::mem;
+use adapter_abi::Phase;
 
 #[account]
 #[derive(Default)]
@@ -16,6 +17,50 @@ pub struct Group {
 
 impl Group {
     pub const LEN: usize = 32 + AdapterEntry::LEN * MAX_ADAPTERS + Vault::LEN * MAX_VAULTS;
+
+    pub fn execute_adapter_cpi<'info>(
+        &self,
+        account_offsets: Vec<Vec<u8>>,
+        accounts: &[AccountInfo<'info>],
+        mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<AccountInfo<'info>>)
+    ) {
+        let adapter_count = self.adapter_infos.len();
+        for (index, adapter_entry) in self.adapter_infos.iter().enumerate() {
+            // Ensure we call the actual account, failsafe for bad client side code
+            let adapter_program = accounts.get(index).unwrap();
+            assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
+
+            let crank_accounts = account_offsets
+                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
+                .iter().map(|info| info.to_account_info())
+                .collect::<Vec<_>>();
+
+            make_cpi(adapter_entry, adapter_program, crank_accounts);
+        }
+    }
+
+    pub fn execute_adapter_cpi_multiple<'info>(
+        &self,
+        account_offsets_list: &[Vec<Vec<u8>>],
+        accounts: &[AccountInfo<'info>],
+        mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<Vec<AccountInfo<'info>>>)
+    ) {
+        let adapter_count = self.adapter_infos.len();
+        for (index, adapter_entry) in self.adapter_infos.iter().enumerate() {
+            // Ensure we call the actual account, failsafe for bad client side code
+            let adapter_program = accounts.get(index).unwrap();
+            assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
+
+            let accounts_vec = account_offsets_list.iter().map(|account_offsets| {
+                account_offsets
+                    .try_indexes_to_data(accounts, index, Option::from(adapter_count))
+                    .iter().map(|info| info.to_account_info())
+                    .collect::<Vec<_>>()
+            }).collect();
+
+            make_cpi(adapter_entry, adapter_program, accounts_vec);
+        }
+    }
 }
 
 #[macro_export]
@@ -32,7 +77,7 @@ macro_rules! gen_group_signer_seeds {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Vault {
     pub i_mint: Pubkey,
-    pub phase: VaultPhase,
+    pub phase: Phase,
     pub j_balance: u64, // TODO figure out if we need to reset this at the start of a cycle
     pub start_timestamp: UnixTimestamp,
     pub end_timestamp: UnixTimestamp,
@@ -41,7 +86,7 @@ pub struct Vault {
 }
 
 impl Vault {
-    pub const LEN: usize = 64;
+    pub const LEN: usize = 72;
     const _LEN_CHECK: [u8; Vault::LEN] = [0; mem::size_of::<Self>()];
 }
 
@@ -59,28 +104,6 @@ impl AdapterEntry {
 impl PartialEq for AdapterEntry {
     fn eq(&self, other: &Self) -> bool {
         self.adapter.key().eq(&other.adapter.key())
-    }
-}
-
-#[derive(PartialEq, Debug, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
-#[repr(C)]
-pub enum VaultPhase {
-    PendingActive,
-    Active,
-    PendingExpired,
-    Expired
-}
-
-impl VaultPhase {
-    pub fn from_time(
-        current_time: UnixTimestamp,
-        vault_start_time: UnixTimestamp,
-        vault_end_time: UnixTimestamp,
-    ) -> VaultPhase {
-        if current_time >= vault_end_time || current_time < vault_start_time {
-            return VaultPhase::Expired;
-        }
-        VaultPhase::Active
     }
 }
 

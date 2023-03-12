@@ -1,8 +1,10 @@
 pub mod contexts;
 pub mod constants;
+pub mod state;
 
 pub use crate::contexts::*;
 pub use crate::constants::*;
+pub use crate::state::*;
 
 use anchor_lang::prelude::*;
 
@@ -48,6 +50,14 @@ pub mod adapter_abi {
         Ok(1)
     }
 
+    /// Transitions the adapter into a new phase
+    ///
+    /// returns: Result<u64, Error>, where the bool is whether or not the phase was successful or pending.
+    pub fn edit_phase(ctx: Context<ICrank>, new_phase: Phase) -> Result<bool> {
+        msg!("Entered adapter_abi::crank dummy instruction");
+        Ok(true)
+    }
+
     /// Instruction to initialize the provider for a vault.
     ///
     /// returns: Result<(), Error>
@@ -56,4 +66,3 @@ pub mod adapter_abi {
         Ok(1)
     }
 }
-

@@ -55,7 +55,7 @@ pub fn adapter_redeem<'info>(
     adapter_abi::cpi::redeem(
         CpiContext::new_with_signer(
             adapter_program.to_account_info(),
-            adapter_abi::cpi::accounts::IDeposit {
+            adapter_abi::cpi::accounts::IRedeem {
                 _ensure_vaults_signed: group.to_account_info(),
                 authority: authority.to_account_info()
             },
@@ -67,13 +67,16 @@ pub fn adapter_redeem<'info>(
 }
 
 pub fn adapter_crank<'info>(
+    payer: &Signer<'info>,
     adapter_program: &AccountInfo<'info>,
     accounts: Vec<AccountInfo<'info>>
 ) -> Result<adapter_abi::cpi::Return<u64>> {
     adapter_abi::cpi::crank(
         CpiContext::new(
             adapter_program.to_account_info(),
-            adapter_abi::cpi::accounts::ICrank {}
+            adapter_abi::cpi::accounts::ICrank {
+                payer: payer.to_account_info(),
+            }
         ).with_remaining_accounts(accounts)
     )
 }

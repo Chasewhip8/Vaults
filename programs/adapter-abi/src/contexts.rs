@@ -21,7 +21,7 @@ pub struct IRedeem<'info> {
 
 #[derive(Accounts)]
 pub struct ICrank<'info> {
-    authority: Signer<'info>
+    pub payer: Signer<'info>,
 }
 
 #[derive(Accounts)]

@@ -2,11 +2,11 @@ use std::cmp::min;
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
+use adapter_abi::Phase::Active;
 use crate::cpis::adapter_deposit;
 use crate::gen_group_signer_seeds;
 use crate::math::{calc_deposit_return_adapter, FP32};
-use crate::state::{Group, ToAccountInfos};
-use crate::state::VaultPhase::Active;
+use crate::state::{AdapterEntry, Group, ToAccountInfos};
 
 // Note: The Redeem and Deposit contexts are almost identical if not identical.
 #[derive(Accounts)]
@@ -59,40 +59,33 @@ impl<'info> Deposit<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, vault_index: u8, amount: u64, adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
+    pub fn handle(&mut self, vault_index: u8, amount: u64, deposit_adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let mut total_return_amount: u64 = 0;
 
         msg!("Depositing {} to adapters.", amount);
 
         // Execute deposit instruction on all providers ensuring all succeed, summing the returned ij mint amounts.
-        let adapter_count = self.group.adapter_infos.len();
-        for (index, adapter_entry) in self.group.adapter_infos.iter().enumerate() {
-            // Calculate the actual amount passed into adapter program based on the ratio
-            let adapter_amount = amount.fp32_mul_floor(adapter_entry.ratio_fp32).unwrap();
+        self.group.execute_adapter_cpi(
+            deposit_adapter_accounts, accounts,
+            |adapter_entry, adapter_program, adapter_accounts| {
+                // Calculate the actual amount passed into adapter program based on the ratio
+                let adapter_amount = amount.fp32_mul_floor(adapter_entry.ratio_fp32).unwrap();
 
-            // Ensure we call the actual account, failsafe for bad client side code
-            let adapter_program = accounts.get(index).unwrap();
-            assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
+                let provider_balance = adapter_deposit(&self.group, &self.authority, adapter_program, adapter_accounts, adapter_amount)
+                    .expect("Deposit adapter CPI instruction failed!")
+                    .get();
 
-            let accounts = adapter_accounts
-                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
-                .iter().map(|info| info.to_account_info())
-                .collect::<Vec<_>>();
+                let return_amount = calc_deposit_return_adapter(
+                    adapter_amount,
+                    self.i_mint.supply,
+                    provider_balance // TODO determine if provider_balance should be before or after deposit
+                );
 
-            let provider_balance = adapter_deposit(&self.group, &self.authority, adapter_program, accounts, adapter_amount)
-                .expect("Deposit adapter CPI instruction failed!")
-                .get();
+                assert!(return_amount > 0, "Invalid return amount from adapter deposit of 0");
 
-            let return_amount = calc_deposit_return_adapter(
-                adapter_amount,
-                self.i_mint.supply,
-                provider_balance // TODO determine if provider_balance should be before or after deposit
-            );
-
-            assert!(return_amount > 0, "Invalid return amount from adapter deposit of 0");
-
-            total_return_amount += return_amount;
-        }
+                total_return_amount += return_amount;
+            }
+        );
 
         // Prevent minting more than 1:1 for a deposit, this is due to excess i_supply when multiple cycles occur.
         total_return_amount = min(total_return_amount, amount);

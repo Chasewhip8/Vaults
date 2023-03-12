@@ -2,10 +2,10 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
 use solana_program::program_option::COption;
+use adapter_abi::Phase::Expired;
 
 use crate::cpis::cpi_transfer_mint_authority_to_group;
 use crate::state::{Group, Vault};
-use crate::state::VaultPhase::Expired;
 
 #[derive(Accounts)]
 pub struct InitVault<'info> {
@@ -51,16 +51,19 @@ impl<'info> InitVault<'info> {
     pub fn handle(
         &mut self,
         start_timestamp: UnixTimestamp,
-        end_timestamp: UnixTimestamp
+        end_timestamp: UnixTimestamp,
+        fp32_fee_rate: u64
     ) -> Result<()> {
         let group = &mut self.group;
 
         let vault = Vault {
             i_mint: self.i_mint.key(),
             phase: Expired, // Force into expired to go through the crank to active logic!
+            j_balance: 0,
             start_timestamp,
             end_timestamp,
-            adapters_verified: false // Start disabled to ensure adapters get initialized, edit_vault will flip this
+            adapters_verified: false, // Start disabled to ensure adapters get initialized, edit_vault will flip this
+            fp32_fee_rate,
         };
 
         // Specifically push here, we do not want to shift the index of other vaults, ever!

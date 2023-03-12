@@ -3,11 +3,10 @@ use anchor_lang::Accounts;
 use anchor_lang::prelude::*;
 use anchor_lang::prelude::Signer;
 use anchor_spl::token::{burn, Burn, Mint, Token, TokenAccount};
-use anchor_spl::token::spl_token::instruction::burn_checked;
+use adapter_abi::Phase::Expired;
 use crate::cpis::{adapter_crank, adapter_redeem};
-use crate::math::{calc_deposit_return_adapter, calc_redeem_return, FP32};
-use crate::state::{Group, ToAccountInfos};
-use crate::state::VaultPhase::{Active, Expired};
+use crate::math::{calc_redeem_return, FP32};
+use crate::state::{Group};
 
 // Note: The Redeem and Deposit contexts are almost identical if not identical.
 #[derive(Accounts)]
@@ -76,47 +75,40 @@ impl<'info> Redeem<'info> {
         redeem_adapter_accounts: Vec<Vec<u8>>,
         accounts: &[AccountInfo<'info>]
     ) -> Result<()> {
-        let vault = self.group.vaults.get_mut(vault_index as usize).unwrap();
+        let vault = self.group.vaults.get(vault_index as usize).unwrap();
 
         // Burn their tokens if they dont have enough this will fail!
         self.burn_token(&self.i_mint, &self.i_account, amount_i)?;
         self.burn_token(&self.j_mint, &self.j_account, amount_j)?;
 
         // For each adapter, crank it to determine its reserves, then calculate the
-        let adapter_count = self.group.adapter_infos.len();
-        for (index, adapter_entry) in self.group.adapter_infos.iter().enumerate() {
-            // Ensure we call the actual account, failsafe for bad client side code
-            let adapter_program = accounts.get(index).unwrap();
-            assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
+        self.group.execute_adapter_cpi_multiple(
+            &[crank_adapter_accounts, redeem_adapter_accounts],
+            accounts,
+            |adapter_entry, adapter_program, adapter_accounts_list| {
+                let mut adapter_accounts_iter = adapter_accounts_list.into_iter();
 
-            let crank_accounts = crank_adapter_accounts
-                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
-                .iter().map(|info| info.to_account_info())
-                .collect::<Vec<_>>();
+                let crank_accounts = adapter_accounts_iter.next().unwrap();
+                let provider_balance = adapter_crank(&self.authority, adapter_program, crank_accounts)
+                    .expect("Crank adapter CPI instruction failed!")
+                    .get();
 
-            let provider_balance = adapter_crank(adapter_program, crank_accounts)
-                .expect("Crank adapter CPI instruction failed!")
-                .get();
+                // TODO check this I am so tired
+                let i_provider_balance = provider_balance - vault.j_balance;
+                let i_returns = calc_redeem_return(
+                    amount_i,
+                    self.i_mint.supply,
+                    vault.fp32_fee_rate,
+                    adapter_entry.ratio_fp32,
+                    i_provider_balance
+                );
+                let provider_request_amount = amount_j.fp32_div(adapter_entry.ratio_fp32).unwrap() + i_returns.net;
 
-            // TODO check this I am so tired
-            let i_provider_balance = provider_balance - vault.j_balance;
-            let i_returns = calc_redeem_return(
-                amount_i,
-                self.i_mint.supply,
-                vault.fp32_fee_rate,
-                adapter_entry.ratio_fp32,
-                i_provider_balance
-            );
-            let provider_request_amount = amount_j.fp32_div(adapter_entry.ratio_fp32).unwrap() + i_returns;
-
-            let redeem_accounts = redeem_adapter_accounts
-                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
-                .iter().map(|info| info.to_account_info())
-                .collect::<Vec<_>>();
-
-            adapter_redeem(&self.group, &self.authority, adapter_program, redeem_accounts, provider_request_amount)
-                .expect("Redeem adapter CPI instruction failed!");
-        }
+                let redeem_accounts = adapter_accounts_iter.next().unwrap();
+                adapter_redeem(&self.group, &self.authority, adapter_program, redeem_accounts, provider_request_amount)
+                    .expect("Redeem adapter CPI instruction failed!");
+            }
+        );
 
         Ok(())
     }

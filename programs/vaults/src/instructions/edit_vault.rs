@@ -3,10 +3,10 @@ use anchor_lang::Accounts;
 use anchor_lang::prelude::*;
 use anchor_lang::prelude::{Account, Signer};
 use solana_program::clock::UnixTimestamp;
+use adapter_abi::Phase::Expired;
 
 use crate::constants::VAULT_AUTHORITY;
 use crate::state::Group;
-use crate::state::VaultPhase::Expired;
 
 #[derive(Accounts)]
 pub struct EditVault<'info> {
@@ -29,6 +29,7 @@ impl<'info> EditVault<'info> {
         accounts: &[AccountInfo<'info>]
     ) -> Result<()> {
         let group = &mut self.group;
+        let adapters_len = group.adapter_infos.len();
         let vault = group.vaults.get_mut(vault_index as usize).unwrap();
 
         if let Some(new_start_timestamp) = maybe_new_start_timestamp {
@@ -54,13 +55,14 @@ impl<'info> EditVault<'info> {
             msg!("Verifying Adapters");
             vault.adapters_verified = true; // Set up here to allow borrow checker to release vaults reference.
 
-            assert_eq!(accounts.len(), group.adapter_infos.len(), "Incorrect amount of adapters to verify!");
+            assert_eq!(accounts.len(), adapters_len, "Incorrect amount of adapters to verify!");
 
+            let i_mint = vault.i_mint;
             for (index, adapter_info) in group.adapter_infos.iter().enumerate() {
                 let expected_account = Pubkey::create_program_address(
                     &[
                         b"Adapter",
-                        vault.i_mint.as_ref()
+                        i_mint.as_ref()
                     ],
                     &adapter_info.adapter
                 ).unwrap();
