@@ -17,50 +17,6 @@ pub struct Group {
 
 impl Group {
     pub const LEN: usize = 32 + AdapterEntry::LEN * MAX_ADAPTERS + Vault::LEN * MAX_VAULTS;
-
-    pub fn execute_adapter_cpi<'info>(
-        &self,
-        account_offsets: Vec<Vec<u8>>,
-        accounts: &[AccountInfo<'info>],
-        mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<AccountInfo<'info>>)
-    ) {
-        let adapter_count = self.adapter_infos.len();
-        for (index, adapter_entry) in self.adapter_infos.iter().enumerate() {
-            // Ensure we call the actual account, failsafe for bad client side code
-            let adapter_program = accounts.get(index).unwrap();
-            assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
-
-            let crank_accounts = account_offsets
-                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
-                .iter().map(|info| info.to_account_info())
-                .collect::<Vec<_>>();
-
-            make_cpi(adapter_entry, adapter_program, crank_accounts);
-        }
-    }
-
-    pub fn execute_adapter_cpi_multiple<'info>(
-        &self,
-        account_offsets_list: &[Vec<Vec<u8>>],
-        accounts: &[AccountInfo<'info>],
-        mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<Vec<AccountInfo<'info>>>)
-    ) {
-        let adapter_count = self.adapter_infos.len();
-        for (index, adapter_entry) in self.adapter_infos.iter().enumerate() {
-            // Ensure we call the actual account, failsafe for bad client side code
-            let adapter_program = accounts.get(index).unwrap();
-            assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
-
-            let accounts_vec = account_offsets_list.iter().map(|account_offsets| {
-                account_offsets
-                    .try_indexes_to_data(accounts, index, Option::from(adapter_count))
-                    .iter().map(|info| info.to_account_info())
-                    .collect::<Vec<_>>()
-            }).collect();
-
-            make_cpi(adapter_entry, adapter_program, accounts_vec);
-        }
-    }
 }
 
 #[macro_export]

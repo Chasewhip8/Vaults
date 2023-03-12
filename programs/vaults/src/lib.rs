@@ -75,11 +75,12 @@ pub mod vaults {
         ctx.accounts.handle(vault_index, amount_i, amount_j, crank_adapter_accounts, deposit_adapter_accounts, ctx.remaining_accounts)
     }
 
-    #[access_control(ctx.accounts.validate())]
     pub fn crank<'info>(
         ctx: Context<'_, '_, '_, 'info, Crank<'info>>,
-        adapter_accounts: Vec<Vec<u8>>
+        vault_index: u8,
+        edit_phase_adapter_accounts: Vec<Vec<u8>>,
+        edit_crank_adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.handle(adapter_accounts, ctx.remaining_accounts)
+        ctx.accounts.handle(vault_index, edit_phase_adapter_accounts, edit_crank_adapter_accounts, ctx.remaining_accounts)
     }
 }

@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use anchor_lang::prelude::*;
 use solana_program::clock::UnixTimestamp;
 
@@ -20,5 +21,11 @@ impl Phase {
             return Phase::Expired;
         }
         Phase::Active
+    }
+}
+
+impl Display for Phase {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

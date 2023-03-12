@@ -3,7 +3,7 @@ use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
 use adapter_abi::Phase::Active;
-use crate::cpis::adapter_deposit;
+use crate::cpis::{adapter_deposit, execute_adapter_cpi};
 use crate::gen_group_signer_seeds;
 use crate::math::{calc_deposit_return_adapter, FP32};
 use crate::state::{AdapterEntry, Group, ToAccountInfos};
@@ -65,13 +65,14 @@ impl<'info> Deposit<'info> {
         msg!("Depositing {} to adapters.", amount);
 
         // Execute deposit instruction on all providers ensuring all succeed, summing the returned ij mint amounts.
-        self.group.execute_adapter_cpi(
-            deposit_adapter_accounts, accounts,
+        execute_adapter_cpi(
+            &self.group.adapter_infos,
+            &deposit_adapter_accounts, accounts,
             |adapter_entry, adapter_program, adapter_accounts| {
                 // Calculate the actual amount passed into adapter program based on the ratio
                 let adapter_amount = amount.fp32_mul_floor(adapter_entry.ratio_fp32).unwrap();
 
-                let provider_balance = adapter_deposit(&self.group, &self.authority, adapter_program, adapter_accounts, adapter_amount)
+                let provider_balance = adapter_deposit(&self.group, adapter_program, adapter_accounts, adapter_amount)
                     .expect("Deposit adapter CPI instruction failed!")
                     .get();
 

@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::prelude::Signer;
 use anchor_spl::token::{burn, Burn, Mint, Token, TokenAccount};
 use adapter_abi::Phase::Expired;
-use crate::cpis::{adapter_crank, adapter_redeem};
+use crate::cpis::{adapter_crank, adapter_redeem, execute_adapter_cpi_multiple};
 use crate::math::{calc_redeem_return, FP32};
 use crate::state::{Group};
 
@@ -82,7 +82,8 @@ impl<'info> Redeem<'info> {
         self.burn_token(&self.j_mint, &self.j_account, amount_j)?;
 
         // For each adapter, crank it to determine its reserves, then calculate the
-        self.group.execute_adapter_cpi_multiple(
+        execute_adapter_cpi_multiple(
+            &self.group.adapter_infos,
             &[crank_adapter_accounts, redeem_adapter_accounts],
             accounts,
             |adapter_entry, adapter_program, adapter_accounts_list| {
@@ -105,7 +106,7 @@ impl<'info> Redeem<'info> {
                 let provider_request_amount = amount_j.fp32_div(adapter_entry.ratio_fp32).unwrap() + i_returns.net;
 
                 let redeem_accounts = adapter_accounts_iter.next().unwrap();
-                adapter_redeem(&self.group, &self.authority, adapter_program, redeem_accounts, provider_request_amount)
+                adapter_redeem(&self.group, adapter_program, redeem_accounts, provider_request_amount)
                     .expect("Redeem adapter CPI instruction failed!");
             }
         );

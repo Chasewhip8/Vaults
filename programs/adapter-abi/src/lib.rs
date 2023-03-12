@@ -24,7 +24,7 @@ pub mod adapter_abi {
     /// * `amount`: The adapter adjusted deposit amount, aka total_deposit * ratio
     ///
     /// returns: Result<u64, Error>, where the u64 is the providers updated balance used to calculate minted receipt assets
-    pub fn deposit(ctx: Context<IDeposit>, amount: u64) -> Result<u64> {
+    pub fn deposit(ctx: Context<Restricted>, amount: u64) -> Result<u64> {
         msg!("Entered adapter_abi::deposit({}) instruction, returning fake value of 1", amount);
         Ok(1)
     }
@@ -37,7 +37,7 @@ pub mod adapter_abi {
     /// * `amount`: The adapter adjusted redeem amount
     ///
     /// returns: Result<(), Error>
-    pub fn redeem(ctx: Context<IRedeem>, amount: u64) -> Result<()> {
+    pub fn redeem(ctx: Context<Restricted>, amount: u64) -> Result<()> {
         msg!("Entered adapter_abi::redeem({}) dummy instruction", amount);
         Ok(())
     }
@@ -52,10 +52,10 @@ pub mod adapter_abi {
 
     /// Transitions the adapter into a new phase
     ///
-    /// returns: Result<u64, Error>, where the bool is whether or not the phase was successful or pending.
-    pub fn edit_phase(ctx: Context<ICrank>, new_phase: Phase) -> Result<bool> {
+    /// returns: Result<u64, Error>, the new Phase
+    pub fn edit_phase(ctx: Context<Restricted>, new_phase: Phase) -> Result<Phase> {
         msg!("Entered adapter_abi::crank dummy instruction");
-        Ok(true)
+        Ok(new_phase)
     }
 
     /// Instruction to initialize the provider for a vault.
