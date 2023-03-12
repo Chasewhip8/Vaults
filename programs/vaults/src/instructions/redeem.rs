@@ -46,7 +46,7 @@ pub struct Redeem<'info> {
 }
 
 impl<'info> Redeem<'info> {
-    pub fn validate(&self, vault_index: u8, amount_i: u64, amount_j: u64, accounts: &[AccountInfo]) -> Result<()> {
+    pub fn validate(&self, vault_index: u8, amount_i: u64, amount_j: u64) -> Result<()> {
         assert_ne!(amount_i + amount_j, 0, "Redeem amounts summed to 0.");
 
         let vault = self.group.vaults.get(vault_index as usize).unwrap();

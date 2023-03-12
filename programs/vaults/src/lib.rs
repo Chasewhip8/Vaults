@@ -16,6 +16,7 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod vaults {
     use super::*;
 
+    #[allow(unused_variables)]
     #[access_control(ctx.accounts.validate())]
     pub fn init_group(ctx: Context<InitGroup>, decimals: u8) -> Result<()> {
         ctx.accounts.handle(*ctx.bumps.get("group").unwrap())
@@ -63,7 +64,7 @@ pub mod vaults {
         ctx.accounts.handle(vault_index, amount, adapter_accounts, ctx.remaining_accounts)
     }
 
-    #[access_control(ctx.accounts.validate(vault_index, amount_i, amount_j, ctx.remaining_accounts))]
+    #[access_control(ctx.accounts.validate(vault_index, amount_i, amount_j))]
     pub fn redeem<'info>(
         ctx: Context<'_, '_, '_, 'info, Redeem<'info>>,
         vault_index: u8,

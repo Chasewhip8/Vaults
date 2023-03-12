@@ -6,7 +6,7 @@ use adapter_abi::Phase::Active;
 use crate::cpis::{adapter_deposit, execute_adapter_cpi};
 use crate::gen_group_signer_seeds;
 use crate::math::{calc_deposit_return_adapter, FP32};
-use crate::state::{AdapterEntry, Group, ToAccountInfos};
+use crate::state::{Group};
 
 // Note: The Redeem and Deposit contexts are almost identical if not identical.
 #[derive(Accounts)]
