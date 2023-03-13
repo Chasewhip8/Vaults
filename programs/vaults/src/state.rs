@@ -1,3 +1,5 @@
+use std::cmp::{min};
+use std::fmt::{Display, Formatter};
 use anchor_lang::prelude::*;
 
 use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
@@ -33,10 +35,10 @@ macro_rules! gen_group_signer_seeds {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Vault {
     pub i_mint: Pubkey,
-    pub phase: Phase,
+    pub phase: VaultPhase,
     pub j_balance: u64, // TODO figure out if we need to reset this at the start of a cycle
-    pub start_timestamp: UnixTimestamp,
-    pub end_timestamp: UnixTimestamp,
+    pub start_timestamp: i64, // UnixTimestamp
+    pub end_timestamp: i64, // UnixTimestamp
     pub adapters_verified: bool,
     pub fp32_fee_rate: u64
 }
@@ -63,27 +65,88 @@ impl PartialEq for AdapterEntry {
     }
 }
 
+pub trait ToAccountIndexVector {
+    fn try_to_index_vector(
+        self,
+        adapter_count: usize
+    ) -> Vec<Vec<u8>>;
+}
+
 pub trait ToAccountInfos {
     fn try_indexes_to_data<'a, T: 'a>(
         &self,
         data: &'a [T],
+        length_entries: usize,
         index: usize,
-        offset: Option<usize>
+        offset: usize
     ) -> Vec<&'a T>;
 }
 
-impl ToAccountInfos for Vec<Vec<u8>> {
+impl ToAccountInfos for Vec<u8> {
     fn try_indexes_to_data<'a, T: 'a>(
         &self,
         data: &'a [T],
+        length_entries: usize,
         index: usize,
-        offset: Option<usize>
+        data_offset: usize
     ) -> Vec<&'a T> {
-        let indexes = self.get(index).unwrap();
-        let offset = offset.unwrap_or(0);
+        // sum(self[0..(index - 1)..self[index]]
+
+        let offset = if index > 0 {
+            (self[0..(index - 1)].iter().sum::<u8>() as usize) + length_entries
+        } else { length_entries };
+
+        let indexes = &self[offset..(offset + *self.get(index).unwrap() as usize)];
+
         indexes.iter()
-            .map(|index| data.get(offset + *index as usize).expect("Value does not exist in data at index!"))
+            .map(|index| data.get(data_offset + *index as usize).expect("Value does not exist in data at index!"))
             .collect::<Vec<_>>()
+    }
+}
+
+#[derive(PartialEq, Debug, Copy, Clone, PartialOrd, AnchorSerialize, AnchorDeserialize)]
+#[repr(C)]
+pub enum VaultPhase {
+    PendingActive,
+    Active,
+    PendingExpired,
+    Expired
+}
+
+impl VaultPhase {
+    pub fn from_time(
+        current_time: UnixTimestamp,
+        vault_start_time: UnixTimestamp,
+        vault_end_time: UnixTimestamp,
+    ) -> VaultPhase {
+        if current_time >= vault_end_time || current_time < vault_start_time {
+            return VaultPhase::Expired;
+        }
+        VaultPhase::Active
+    }
+
+    pub fn from_adapter(adapter_phase: Phase) -> Self {
+        match adapter_phase {
+            Phase::Active => Self::Active,
+            Phase::Expired => Self::Expired,
+            Phase::PendingExpired => Self::PendingExpired,
+            Phase::PendingActive => Self::PendingActive,
+        }
+    }
+
+    pub fn to_adapter(self) -> Phase {
+        match self {
+            Self::Active => Phase::Active,
+            Self::Expired => Phase::Expired,
+            Self::PendingExpired => Phase::PendingExpired,
+            Self::PendingActive => Phase::PendingActive,
+        }
+    }
+}
+
+impl Display for VaultPhase {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
@@ -94,14 +157,15 @@ mod tests {
     #[test]
     fn try_indexes_to_data_test() {
         let test_data = &[5, 6, 7, 8, 9];
-        let test_indexes: Vec<Vec<u8>> = vec!(
-            vec!(0, 3),
-            vec!(1, 4),
-            vec!(3, 2)
+        let test_indexes: Vec<u8> = vec!(
+            // Lengths
+            1, 2,
+            // Indexes
+            0,
+            1, 2
         );
 
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 0, None), vec![&5, &8]);
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 1, None), vec![&6, &9]);
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, None), vec![&8, &7]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, 0, 0), vec![&5]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, 1, 0), vec![&6, &7]);
     }
 }

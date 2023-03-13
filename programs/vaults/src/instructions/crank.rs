@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
-use adapter_abi::Phase;
-use adapter_abi::Phase::{Active, Expired, PendingActive, PendingExpired};
 use crate::cpis::{adapter_crank, adapter_edit_phase, execute_adapter_cpi};
-use crate::state::{AdapterEntry, Group};
+use crate::state::{AdapterEntry, Group, VaultPhase};
+use crate::state::VaultPhase::*;
 
 #[derive(Accounts)]
 pub struct Crank<'info> {
@@ -16,13 +15,13 @@ pub struct Crank<'info> {
 }
 
 impl<'info> Crank<'info> {
-    pub fn handle(&mut self, vault_index: u8, edit_phase_adapter_accounts: Vec<Vec<u8>>, crank_adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
+    pub fn handle(&mut self, vault_index: u8, edit_phase_adapter_accounts: Vec<u8>, crank_adapter_accounts: Vec<u8>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let current_time = self.clock.unix_timestamp;
         let vault = &self.group.vaults.get(vault_index as usize).unwrap();
 
         let new_vault_phase = match (
             vault.phase,
-            Phase::from_time(current_time, vault.start_timestamp, vault.end_timestamp) // Expected Phase
+            VaultPhase::from_time(current_time, vault.start_timestamp, vault.end_timestamp) // Expected Phase
         ) {
             // Active -> Expired or PendingExpired -> Expired (no matter what the timestamp says)
             (Active, Expired) | (PendingExpired, _) => {
@@ -58,6 +57,7 @@ impl<'info> Crank<'info> {
         execute_adapter_cpi(
             &self.group.adapter_infos,
             &crank_adapter_accounts, accounts,
+            3,
             |_, adapter_program, adapter_accounts| {
                 adapter_crank(
                     &self.payer,
@@ -73,16 +73,17 @@ impl<'info> Crank<'info> {
     fn switch_adapter_phase(
         &self,
         adapter_infos: &Vec<AdapterEntry>,
-        edit_phase_adapter_accounts: &Vec<Vec<u8>>,
+        edit_phase_adapter_accounts: &Vec<u8>,
         accounts: &[AccountInfo<'info>],
-        new_phase: Phase,
-        fallback_vault_phase: Phase
-    ) -> Phase {
+        new_phase: VaultPhase,
+        fallback_vault_phase: VaultPhase
+    ) -> VaultPhase {
         let mut made_full_transition = true;
 
         execute_adapter_cpi(
             adapter_infos,
-            &edit_phase_adapter_accounts, accounts,
+            edit_phase_adapter_accounts, accounts,
+            3,
             |_, adapter_program, adapter_accounts| {
                 let new_adapter_phase = adapter_edit_phase(
                     &self.group,
@@ -90,6 +91,7 @@ impl<'info> Crank<'info> {
                     adapter_accounts,
                     new_phase
                 ).expect("Adapter phase edit failed!").get();
+                let new_adapter_phase = VaultPhase::from_adapter(new_adapter_phase);
 
                 if new_adapter_phase != new_phase {
                     made_full_transition = false;

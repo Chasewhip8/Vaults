@@ -2,10 +2,10 @@ use anchor_lang::Accounts;
 use anchor_lang::prelude::*;
 use anchor_lang::prelude::{Account, Signer};
 use solana_program::clock::UnixTimestamp;
-use adapter_abi::Phase::Expired;
 
 use crate::constants::VAULT_AUTHORITY;
 use crate::state::Group;
+use crate::state::VaultPhase::Expired;
 
 #[derive(Accounts)]
 pub struct EditVault<'info> {
@@ -13,7 +13,7 @@ pub struct EditVault<'info> {
         mut,
         address = VAULT_AUTHORITY.key()
     )]
-    authority: Signer<'info>,
+    vault_authority: Signer<'info>,
 
     #[account(mut)]
     group: Box<Account<'info, Group>>,

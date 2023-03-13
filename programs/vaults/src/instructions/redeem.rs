@@ -3,10 +3,10 @@ use anchor_lang::Accounts;
 use anchor_lang::prelude::*;
 use anchor_lang::prelude::Signer;
 use anchor_spl::token::{burn, Burn, Mint, Token, TokenAccount};
-use adapter_abi::Phase::Expired;
 use crate::cpis::{adapter_crank, adapter_redeem, execute_adapter_cpi_multiple};
 use crate::math::{calc_redeem_return, FP32};
 use crate::state::{Group};
+use crate::state::VaultPhase::Expired;
 
 // Note: The Redeem and Deposit contexts are almost identical if not identical.
 #[derive(Accounts)]
@@ -71,8 +71,8 @@ impl<'info> Redeem<'info> {
         vault_index: u8,
         amount_i: u64,
         amount_j: u64,
-        crank_adapter_accounts: Vec<Vec<u8>>,
-        redeem_adapter_accounts: Vec<Vec<u8>>,
+        crank_adapter_accounts: Vec<u8>,
+        redeem_adapter_accounts: Vec<u8>,
         accounts: &[AccountInfo<'info>]
     ) -> Result<()> {
         let vault = self.group.vaults.get(vault_index as usize).unwrap();
@@ -86,6 +86,7 @@ impl<'info> Redeem<'info> {
             &self.group.adapter_infos,
             &[crank_adapter_accounts, redeem_adapter_accounts],
             accounts,
+            8,
             |adapter_entry, adapter_program, adapter_accounts_list| {
                 let mut adapter_accounts_iter = adapter_accounts_list.into_iter();
 

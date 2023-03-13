@@ -11,9 +11,9 @@ import {
     TransactionInstruction,
     TransactionSignature
 } from "@solana/web3.js";
-import { IDL, Vaults } from "./idl/seagull_vaults_v1";
-import { Group } from "./types";
+import { AdapterEntry, Group } from "./types";
 import { VAULT_AUTHORITY } from "./constants";
+import { IDL, Vaults } from "./idl/vaults";
 
 export class SeagullVaultsProvider {
     private readonly _connection: Connection;
@@ -98,15 +98,107 @@ export class SeagullVaultsProvider {
         iMint: PublicKey,
         startTimestamp: BN,
         endTimestamp: BN,
+        fp32FeeRate: BN,
         vaultAuthority: PublicKey = VAULT_AUTHORITY
     ): Promise<TransactionInstruction> {
         return this.program.methods
-            .initVault(startTimestamp, endTimestamp)
+            .initVault(startTimestamp, endTimestamp, fp32FeeRate)
             .accounts({
                 vaultAuthority: vaultAuthority,
                 group: group.publicKey,
                 iMint: iMint,
                 jMint: group.jMint
+            })
+            .instruction();
+    }
+
+    public editVault(
+        group: Group,
+        iMint: PublicKey,
+        newStartTimestamp?: BN,
+        newEndTimestamp?: BN,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY
+    ): Promise<TransactionInstruction> {
+        const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
+
+        return this.program.methods
+            .editVault(vaultIndex, newStartTimestamp ?? null, newEndTimestamp ?? null)
+            .accounts({
+                vaultAuthority: vaultAuthority,
+                group: group.publicKey
+            })
+            .instruction();
+    }
+
+    public editGroup(
+        group: Group,
+        iMint: PublicKey,
+        newAdapters: AdapterEntry[],
+        vaultAuthority: PublicKey = VAULT_AUTHORITY
+    ): Promise<TransactionInstruction> {
+        return this.program.methods
+            .editGroup(newAdapters)
+            .accounts({
+                vaultAuthority: vaultAuthority,
+                group: group.publicKey
+            })
+            .instruction();
+    }
+
+    public deposit(
+        group: Group,
+        iMint: PublicKey,
+        authority: PublicKey,
+        amount: BN
+    ): Promise<TransactionInstruction> {
+        const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
+
+        // TODO parse accounts
+        return this.program.methods
+            .deposit(vaultIndex, amount, [])
+            .accounts({
+                authority: authority,
+                group: group.publicKey,
+                jMint: group.jMint,
+                iMint: iMint
+            })
+            .instruction();
+    }
+
+    public redeem(
+        group: Group,
+        iMint: PublicKey,
+        authority: PublicKey,
+        amount_i: BN,
+        amount_j: BN
+    ): Promise<TransactionInstruction> {
+        const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
+
+        // TODO parse accounts
+        return this.program.methods
+            .redeem(vaultIndex, amount_i, amount_j, [], [])
+            .accounts({
+                authority: authority,
+                group: group.publicKey,
+                jMint: group.jMint,
+                iMint: iMint
+            })
+            .instruction();
+    }
+
+    public crank(
+        group: Group,
+        iMint: PublicKey,
+        payer: PublicKey
+    ): Promise<TransactionInstruction> {
+        const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
+
+        // TODO parse accounts
+        return this.program.methods
+            .crank(vaultIndex, [], [])
+            .accounts({
+                payer: payer,
+                group: group.publicKey
             })
             .instruction();
     }

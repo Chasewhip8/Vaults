@@ -2,11 +2,11 @@ use std::cmp::min;
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
-use adapter_abi::Phase::Active;
 use crate::cpis::{adapter_deposit, execute_adapter_cpi};
 use crate::gen_group_signer_seeds;
 use crate::math::{calc_deposit_return_adapter, FP32};
 use crate::state::{Group};
+use crate::state::VaultPhase::Active;
 
 // Note: The Redeem and Deposit contexts are almost identical if not identical.
 #[derive(Accounts)]
@@ -59,7 +59,7 @@ impl<'info> Deposit<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, vault_index: u8, amount: u64, deposit_adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
+    pub fn handle(&mut self, vault_index: u8, amount: u64, deposit_adapter_accounts: Vec<u8>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let mut total_return_amount: u64 = 0;
 
         msg!("Depositing {} to adapters.", amount);
@@ -68,6 +68,7 @@ impl<'info> Deposit<'info> {
         execute_adapter_cpi(
             &self.group.adapter_infos,
             &deposit_adapter_accounts, accounts,
+            8,
             |adapter_entry, adapter_program, adapter_accounts| {
                 // Calculate the actual amount passed into adapter program based on the ratio
                 let adapter_amount = amount.fp32_mul_floor(adapter_entry.ratio_fp32).unwrap();

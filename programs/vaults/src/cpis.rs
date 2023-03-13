@@ -3,7 +3,7 @@ use anchor_spl::token::spl_token::instruction::AuthorityType;
 use anchor_spl::token::{Mint, SetAuthority, Token};
 use adapter_abi::Phase;
 use crate::gen_group_signer_seeds;
-use crate::state::{AdapterEntry, Group, ToAccountInfos};
+use crate::state::{AdapterEntry, Group, VaultPhase, ToAccountInfos};
 
 pub fn cpi_transfer_mint_authority_to_group<'info>(
     token_program: &Program<'info, Token>,
@@ -27,8 +27,9 @@ pub fn cpi_transfer_mint_authority_to_group<'info>(
 
 pub fn execute_adapter_cpi<'info>(
     adapter_infos: &Vec<AdapterEntry>,
-    account_offsets: &Vec<Vec<u8>>,
+    account_offsets: &Vec<u8>,
     accounts: &[AccountInfo<'info>],
+    context_accounts_len: usize,
     mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<AccountInfo<'info>>)
 ) {
     let adapter_count = adapter_infos.len();
@@ -38,7 +39,7 @@ pub fn execute_adapter_cpi<'info>(
         assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
 
         let crank_accounts = account_offsets
-            .try_indexes_to_data(accounts, index, Option::from(adapter_count))
+            .try_indexes_to_data(accounts, adapter_count, index,context_accounts_len)
             .iter().map(|info| info.to_account_info())
             .collect::<Vec<_>>();
 
@@ -48,8 +49,9 @@ pub fn execute_adapter_cpi<'info>(
 
 pub fn execute_adapter_cpi_multiple<'info>(
     adapter_infos: &Vec<AdapterEntry>,
-    account_offsets_list: &[Vec<Vec<u8>>],
+    account_offsets_list: &[Vec<u8>],
     accounts: &[AccountInfo<'info>],
+    context_accounts_len: usize,
     mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<Vec<AccountInfo<'info>>>)
 ) {
     let adapter_count = adapter_infos.len();
@@ -60,7 +62,7 @@ pub fn execute_adapter_cpi_multiple<'info>(
 
         let accounts_vec = account_offsets_list.iter().map(|account_offsets| {
             account_offsets
-                .try_indexes_to_data(accounts, index, Option::from(adapter_count))
+                .try_indexes_to_data(accounts, adapter_count, index, context_accounts_len)
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>()
         }).collect();
@@ -126,7 +128,7 @@ pub fn adapter_edit_phase<'info>(
     group: &Account<'info, Group>,
     adapter_program: &AccountInfo<'info>,
     accounts: Vec<AccountInfo<'info>>,
-    new_phase: Phase
+    new_phase: VaultPhase
 ) -> Result<adapter_abi::cpi::Return<Phase>> {
     adapter_abi::cpi::edit_phase(
         CpiContext::new_with_signer(
@@ -137,6 +139,6 @@ pub fn adapter_edit_phase<'info>(
             &[&gen_group_signer_seeds!(group)[..]]
         ).with_remaining_accounts(accounts),
         // Adapter Deposit Parameters
-        new_phase
+        new_phase.to_adapter()
     )
 }

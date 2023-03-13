@@ -2,14 +2,18 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use solana_program::clock::UnixTimestamp;
 use solana_program::program_option::COption;
-use adapter_abi::Phase::Expired;
+use crate::constants::VAULT_AUTHORITY;
 
 use crate::cpis::cpi_transfer_mint_authority_to_group;
 use crate::state::{Group, Vault};
+use crate::state::VaultPhase::Expired;
 
 #[derive(Accounts)]
 pub struct InitVault<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        address = VAULT_AUTHORITY.key()
+    )]
     vault_authority: Signer<'info>,
 
     #[account(

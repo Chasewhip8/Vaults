@@ -12,7 +12,7 @@ pub struct EditGroup<'info> {
         mut,
         address = VAULT_AUTHORITY.key()
     )]
-    authority: Signer<'info>,
+    vault_authority: Signer<'info>,
 
     #[account(mut)]
     group: Box<Account<'info, Group>>,
