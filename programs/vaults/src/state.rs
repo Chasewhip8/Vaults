@@ -65,41 +65,25 @@ impl PartialEq for AdapterEntry {
     }
 }
 
-pub trait ToAccountIndexVector {
-    fn try_to_index_vector(
-        self,
-        adapter_count: usize
-    ) -> Vec<Vec<u8>>;
-}
-
 pub trait ToAccountInfos {
     fn try_indexes_to_data<'a, T: 'a>(
         &self,
         data: &'a [T],
-        length_entries: usize,
         index: usize,
         offset: usize
     ) -> Vec<&'a T>;
 }
 
-impl ToAccountInfos for Vec<u8> {
+impl ToAccountInfos for Vec<Vec<u8>> {
     fn try_indexes_to_data<'a, T: 'a>(
         &self,
         data: &'a [T],
-        length_entries: usize,
         index: usize,
-        data_offset: usize
+        offset: usize
     ) -> Vec<&'a T> {
-        // sum(self[0..(index - 1)..self[index]]
-
-        let offset = if index > 0 {
-            (self[0..(index - 1)].iter().sum::<u8>() as usize) + length_entries
-        } else { length_entries };
-
-        let indexes = &self[offset..(offset + *self.get(index).unwrap() as usize)];
-
+        let indexes = self.get(index).unwrap();
         indexes.iter()
-            .map(|index| data.get(data_offset + *index as usize).expect("Value does not exist in data at index!"))
+            .map(|index| data.get(offset + *index as usize).expect("Value does not exist in data at index!"))
             .collect::<Vec<_>>()
     }
 }
@@ -157,15 +141,14 @@ mod tests {
     #[test]
     fn try_indexes_to_data_test() {
         let test_data = &[5, 6, 7, 8, 9];
-        let test_indexes: Vec<u8> = vec!(
-            // Lengths
-            1, 2,
-            // Indexes
-            0,
-            1, 2
+        let test_indexes: Vec<Vec<u8>> = vec!(
+            vec!(0, 3),
+            vec!(1, 4),
+            vec!(3, 2)
         );
 
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, 0, 0), vec![&5]);
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, 1, 0), vec![&6, &7]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 0, None), vec![&5, &8]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 1, None), vec![&6, &9]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, None), vec![&8, &7]);
     }
 }

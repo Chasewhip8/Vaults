@@ -58,7 +58,7 @@ pub mod vaults {
         ctx: Context<'_, '_, '_, 'info, Deposit<'info>>,
         vault_index: u8,
         amount: u64,
-        adapter_accounts: Vec<u8>
+        adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
         ctx.accounts.handle(vault_index, amount, adapter_accounts, ctx.remaining_accounts)
     }
@@ -69,8 +69,8 @@ pub mod vaults {
         vault_index: u8,
         amount_i: u64,
         amount_j: u64,
-        crank_adapter_accounts: Vec<u8>,
-        deposit_adapter_accounts: Vec<u8>
+        crank_adapter_accounts: Vec<Vec<u8>>,
+        deposit_adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
         ctx.accounts.handle(vault_index, amount_i, amount_j, crank_adapter_accounts, deposit_adapter_accounts, ctx.remaining_accounts)
     }
@@ -78,9 +78,9 @@ pub mod vaults {
     pub fn crank<'info>(
         ctx: Context<'_, '_, '_, 'info, Crank<'info>>,
         vault_index: u8,
-        edit_phase_adapter_accounts: Vec<u8>,
-        edit_crank_adapter_accounts: Vec<u8>
+        edit_phase_adapter_accounts: Vec<Vec<u8>>,
+        crank_adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.handle(vault_index, edit_phase_adapter_accounts, edit_crank_adapter_accounts, ctx.remaining_accounts)
+        ctx.accounts.handle(vault_index, edit_phase_adapter_accounts, crank_adapter_accounts, ctx.remaining_accounts)
     }
 }

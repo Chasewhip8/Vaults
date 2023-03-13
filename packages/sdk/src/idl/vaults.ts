@@ -334,7 +334,7 @@ export type Vaults = {
           }
         },
         {
-          "name": "editCrankAdapterAccounts",
+          "name": "crankAdapterAccounts",
           "type": {
             "vec": "bytes"
           }
@@ -797,7 +797,7 @@ export const IDL: Vaults = {
           }
         },
         {
-          "name": "editCrankAdapterAccounts",
+          "name": "crankAdapterAccounts",
           "type": {
             "vec": "bytes"
           }

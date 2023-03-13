@@ -14,6 +14,15 @@ export const VaultPhases: TypedKeyMap<PhaseKey, VaultPhase> = {
     Expired: { expired: {} }
 };
 
+export type AccountMeta = {
+    /** An account's public key */
+    pubkey: PublicKey;
+    /** True if an instruction requires a transaction signature matching `pubkey` */
+    isSigner: boolean;
+    /** True if the `pubkey` can be loaded as a read-write account. */
+    isWritable: boolean;
+};
+
 export type Group = AccountWithKey<GroupType>;
 export type GroupType = {
     jMint: PublicKey,

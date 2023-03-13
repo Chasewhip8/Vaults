@@ -71,8 +71,8 @@ impl<'info> Redeem<'info> {
         vault_index: u8,
         amount_i: u64,
         amount_j: u64,
-        crank_adapter_accounts: Vec<u8>,
-        redeem_adapter_accounts: Vec<u8>,
+        crank_adapter_accounts: Vec<Vec<u8>>,
+        redeem_adapter_accounts: Vec<Vec<u8>>,
         accounts: &[AccountInfo<'info>]
     ) -> Result<()> {
         let vault = self.group.vaults.get(vault_index as usize).unwrap();

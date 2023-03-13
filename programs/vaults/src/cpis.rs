@@ -26,20 +26,19 @@ pub fn cpi_transfer_mint_authority_to_group<'info>(
 }
 
 pub fn execute_adapter_cpi<'info>(
-    adapter_infos: &Vec<AdapterEntry>,
-    account_offsets: &Vec<u8>,
+    adapter_infos: &[AdapterEntry],
+    account_offsets: &Vec<Vec<u8>>,
     accounts: &[AccountInfo<'info>],
     context_accounts_len: usize,
     mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<AccountInfo<'info>>)
 ) {
-    let adapter_count = adapter_infos.len();
     for (index, adapter_entry) in adapter_infos.iter().enumerate() {
         // Ensure we call the actual account, failsafe for bad client side code
         let adapter_program = accounts.get(index).unwrap();
         assert_eq!(adapter_program.key(), adapter_entry.adapter, "Adapter program id mismatch");
 
         let crank_accounts = account_offsets
-            .try_indexes_to_data(accounts, adapter_count, index,context_accounts_len)
+            .try_indexes_to_data(accounts, index, context_accounts_len)
             .iter().map(|info| info.to_account_info())
             .collect::<Vec<_>>();
 
@@ -48,13 +47,12 @@ pub fn execute_adapter_cpi<'info>(
 }
 
 pub fn execute_adapter_cpi_multiple<'info>(
-    adapter_infos: &Vec<AdapterEntry>,
-    account_offsets_list: &[Vec<u8>],
+    adapter_infos: &[AdapterEntry],
+    account_offsets_list: &[Vec<Vec<u8>>],
     accounts: &[AccountInfo<'info>],
     context_accounts_len: usize,
     mut make_cpi: impl FnMut(&AdapterEntry, &AccountInfo<'info>, Vec<Vec<AccountInfo<'info>>>)
 ) {
-    let adapter_count = adapter_infos.len();
     for (index, adapter_entry) in adapter_infos.iter().enumerate() {
         // Ensure we call the actual account, failsafe for bad client side code
         let adapter_program = accounts.get(index).unwrap();
@@ -62,7 +60,7 @@ pub fn execute_adapter_cpi_multiple<'info>(
 
         let accounts_vec = account_offsets_list.iter().map(|account_offsets| {
             account_offsets
-                .try_indexes_to_data(accounts, adapter_count, index, context_accounts_len)
+                .try_indexes_to_data(accounts, index, context_accounts_len)
                 .iter().map(|info| info.to_account_info())
                 .collect::<Vec<_>>()
         }).collect();

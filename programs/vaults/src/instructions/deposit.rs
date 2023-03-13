@@ -59,7 +59,7 @@ impl<'info> Deposit<'info> {
         Ok(())
     }
 
-    pub fn handle(&mut self, vault_index: u8, amount: u64, deposit_adapter_accounts: Vec<u8>, accounts: &[AccountInfo<'info>]) -> Result<()> {
+    pub fn handle(&mut self, vault_index: u8, amount: u64, deposit_adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let mut total_return_amount: u64 = 0;
 
         msg!("Depositing {} to adapters.", amount);

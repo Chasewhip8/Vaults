@@ -14,6 +14,12 @@ import {
 import { AdapterEntry, Group } from "./types";
 import { VAULT_AUTHORITY } from "./constants";
 import { IDL, Vaults } from "./idl/vaults";
+import {
+    generateCrankAccounts,
+    generateCrankEditPhaseAccounts,
+    generateDepositAccounts,
+    generateRedeemAccounts
+} from "./adapters/adapter";
 
 export class SeagullVaultsProvider {
     private readonly _connection: Connection;
@@ -152,6 +158,7 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
+        // TODO parse accounts
         return this.program.methods
             .editVault(vaultIndex, newStartTimestamp ?? null, newEndTimestamp ?? null)
             .accounts({
@@ -215,15 +222,16 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        // TODO parse accounts
+        const accountData = generateDepositAccounts(group, iMint, authority);
         return this.program.methods
-            .deposit(vaultIndex, amount, [])
+            .deposit(vaultIndex, amount, accountData.index_data)
             .accounts({
                 authority: authority,
                 group: group.publicKey,
                 jMint: group.jMint,
                 iMint: iMint
             })
+            .remainingAccounts(accountData.accounts)
             .instruction();
     }
 
@@ -251,15 +259,17 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        // TODO parse accounts
+        const redeemAccountData = generateRedeemAccounts(group, iMint, authority);
+        const crankAccountData = generateCrankAccounts(group, iMint, redeemAccountData.accounts); // Combine the accounts
         return this.program.methods
-            .redeem(vaultIndex, amount_i, amount_j, [], [])
+            .redeem(vaultIndex, amount_i, amount_j, crankAccountData.index_data, redeemAccountData.index_data)
             .accounts({
                 authority: authority,
                 group: group.publicKey,
                 jMint: group.jMint,
                 iMint: iMint
             })
+            .remainingAccounts(crankAccountData.accounts)
             .instruction();
     }
 
@@ -286,13 +296,15 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        // TODO parse accounts
+        const editPhaseAccountData = generateCrankEditPhaseAccounts(group, iMint);
+        const crankAccountData = generateCrankAccounts(group, iMint, editPhaseAccountData.accounts); // Combine the accounts
         return this.program.methods
-            .crank(vaultIndex, [], [])
+            .crank(vaultIndex, editPhaseAccountData.index_data, crankAccountData.index_data)
             .accounts({
                 payer: payer,
                 group: group.publicKey
             })
+            .remainingAccounts(crankAccountData.accounts)
             .instruction();
     }
 

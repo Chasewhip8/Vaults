@@ -15,7 +15,7 @@ pub struct Crank<'info> {
 }
 
 impl<'info> Crank<'info> {
-    pub fn handle(&mut self, vault_index: u8, edit_phase_adapter_accounts: Vec<u8>, crank_adapter_accounts: Vec<u8>, accounts: &[AccountInfo<'info>]) -> Result<()> {
+    pub fn handle(&mut self, vault_index: u8, edit_phase_adapter_accounts: Vec<Vec<u8>>, crank_adapter_accounts: Vec<Vec<u8>>, accounts: &[AccountInfo<'info>]) -> Result<()> {
         let current_time = self.clock.unix_timestamp;
         let vault = &self.group.vaults.get(vault_index as usize).unwrap();
 
@@ -73,7 +73,7 @@ impl<'info> Crank<'info> {
     fn switch_adapter_phase(
         &self,
         adapter_infos: &Vec<AdapterEntry>,
-        edit_phase_adapter_accounts: &Vec<u8>,
+        edit_phase_adapter_accounts: &Vec<Vec<u8>>,
         accounts: &[AccountInfo<'info>],
         new_phase: VaultPhase,
         fallback_vault_phase: VaultPhase
