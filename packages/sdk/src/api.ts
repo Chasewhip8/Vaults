@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 
-import { AnchorProvider, BN, Program, Provider } from "@project-serum/anchor";
+import { AnchorProvider, BN, Program, Provider, web3 } from "@project-serum/anchor";
 import {
     Commitment,
     ConfirmOptions,
@@ -39,21 +39,21 @@ export class SeagullVaultsProvider {
         );
     }
 
-    public async sendTransaction<ARGS extends any[]>(
-        keypair: Signer[],
-        sendConfig: ConfirmOptions,
-        instructionFunction: (...args: ARGS) => Promise<TransactionInstruction>,
-        ...args: ARGS
-    ): Promise<TransactionSignature> {
-        const ix: TransactionInstruction = await instructionFunction.apply(this, args);
-        const transaction = new Transaction({
-            feePayer: keypair[0].publicKey,
-            ...await this.connection.getLatestBlockhash(sendConfig.commitment)
-        });
-        transaction.add(ix);
-        transaction.sign(...keypair);
+    private async sendTransactionAndConfirm(
+        signers: anchor.web3.Signer[],
+        instruction: TransactionInstruction[],
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        const sendConfig = confirmOptions ?? { commitment: this.connection.commitment };
 
-        return sendAndConfirmTransaction(this.connection, transaction, keypair, sendConfig);
+        const transaction = new Transaction({
+            feePayer: signers[0].publicKey,
+            ...(await this.connection.getLatestBlockhash(sendConfig.commitment))
+        });
+        transaction.add(...instruction);
+        transaction.sign(...signers);
+
+        return web3.sendAndConfirmTransaction(this.connection, transaction, signers, sendConfig);
     }
 
     get connection() {
@@ -93,6 +93,20 @@ export class SeagullVaultsProvider {
             .instruction();
     }
 
+    public async initGroupRpc(
+        signers: anchor.web3.Signer[],
+        jMint: PublicKey,
+        decimals: number,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.initGroup(jMint, decimals, vaultAuthority)],
+            confirmOptions
+        );
+    }
+
     public initVault(
         group: Group,
         iMint: PublicKey,
@@ -110,6 +124,23 @@ export class SeagullVaultsProvider {
                 jMint: group.jMint
             })
             .instruction();
+    }
+
+    public async initVaultRpc(
+        signers: anchor.web3.Signer[],
+        group: Group,
+        iMint: PublicKey,
+        startTimestamp: BN,
+        endTimestamp: BN,
+        fp32FeeRate: BN,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.initVault(group, iMint, startTimestamp, endTimestamp, fp32FeeRate, vaultAuthority)],
+            confirmOptions
+        );
     }
 
     public editVault(
@@ -130,6 +161,22 @@ export class SeagullVaultsProvider {
             .instruction();
     }
 
+    public async editVaultRpc(
+        signers: anchor.web3.Signer[],
+        group: Group,
+        iMint: PublicKey,
+        newStartTimestamp?: BN,
+        newEndTimestamp?: BN,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.editVault(group, iMint, newStartTimestamp, newEndTimestamp, vaultAuthority)],
+            confirmOptions
+        );
+    }
+
     public editGroup(
         group: Group,
         iMint: PublicKey,
@@ -143,6 +190,21 @@ export class SeagullVaultsProvider {
                 group: group.publicKey
             })
             .instruction();
+    }
+
+    public async editGroupRpc(
+        signers: anchor.web3.Signer[],
+        group: Group,
+        iMint: PublicKey,
+        newAdapters: AdapterEntry[],
+        vaultAuthority: PublicKey = VAULT_AUTHORITY,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.editGroup(group, iMint, newAdapters, vaultAuthority)],
+            confirmOptions
+        );
     }
 
     public deposit(
@@ -163,6 +225,21 @@ export class SeagullVaultsProvider {
                 iMint: iMint
             })
             .instruction();
+    }
+
+    public async depositRpc(
+        signers: anchor.web3.Signer[],
+        group: Group,
+        iMint: PublicKey,
+        authority: PublicKey,
+        amount: BN,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.deposit(group, iMint, authority, amount)],
+            confirmOptions
+        );
     }
 
     public redeem(
@@ -186,6 +263,22 @@ export class SeagullVaultsProvider {
             .instruction();
     }
 
+    public async redeemRpc(
+        signers: anchor.web3.Signer[],
+        group: Group,
+        iMint: PublicKey,
+        authority: PublicKey,
+        amount_i: BN,
+        amount_j: BN,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.redeem(group, iMint, authority, amount_i, amount_j)],
+            confirmOptions
+        );
+    }
+
     public crank(
         group: Group,
         iMint: PublicKey,
@@ -201,5 +294,19 @@ export class SeagullVaultsProvider {
                 group: group.publicKey
             })
             .instruction();
+    }
+
+    public async crankRpc(
+        signers: anchor.web3.Signer[],
+        group: Group,
+        iMint: PublicKey,
+        payer: PublicKey,
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        return this.sendTransactionAndConfirm(
+            signers,
+            [await this.crank(group, iMint, payer)],
+            confirmOptions
+        );
     }
 }
