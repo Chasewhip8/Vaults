@@ -3,10 +3,6 @@ import { PublicKey } from "@solana/web3.js";
 import { AccountMeta, Group } from "../types";
 
 export default class TestAdapter extends Adapter{
-    generateEditVaultAccounts(group: Group, iMint: PublicKey) {
-        return []
-    }
-
     generateCrankAccounts(group: Group, iMint: PublicKey) {
         return []
     }

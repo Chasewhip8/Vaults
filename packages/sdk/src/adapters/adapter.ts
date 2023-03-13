@@ -1,9 +1,9 @@
 import { AccountMeta, Group } from "../types";
 import { PublicKey } from "@solana/web3.js";
 import TestAdapter from "./TestAdapter";
+import { web3 } from "@project-serum/anchor";
 
 export abstract class Adapter {
-    public abstract generateEditVaultAccounts(group: Group, iMint: PublicKey): AccountMeta[];
     public abstract generateDepositAccounts(group: Group, iMint: PublicKey, authority: PublicKey): AccountMeta[];
     public abstract generateRedeemAccounts(group: Group, iMint: PublicKey, authority: PublicKey): AccountMeta[];
     public abstract generateCrankAccounts(group: Group, iMint: PublicKey): AccountMeta[];
@@ -42,15 +42,6 @@ function compactAndGenerate(accounts: AccountMeta[][], startingAccounts?: Accoun
     }
 }
 
-export function generateEditVaultAccounts(group: Group, iMint: PublicKey) {
-    return compactAndGenerate(group.adapterInfos.map((info) => {
-        const adapter = adapterRegistry.get(info.adapter.toBase58());
-        if (!adapter){
-            throw Error("Adapter not found in registry! " + info.adapter.toBase58());
-        }
-        return adapter.generateEditVaultAccounts(group, iMint);
-    }));
-}
 
 export function generateDepositAccounts(group: Group, iMint: PublicKey, authority: PublicKey) {
     return compactAndGenerate(group.adapterInfos.map((info) => {

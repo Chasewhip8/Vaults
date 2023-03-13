@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 
-import { AnchorProvider, BN, Program, Provider, web3 } from "@project-serum/anchor";
+import { Accounts, AnchorProvider, BN, Program, Provider, web3 } from "@project-serum/anchor";
 import {
     Commitment,
     ConfirmOptions,
@@ -11,7 +11,7 @@ import {
     TransactionInstruction,
     TransactionSignature
 } from "@solana/web3.js";
-import { AdapterEntry, Group } from "./types";
+import { AccountMeta, AdapterEntry, Group } from "./types";
 import { VAULT_AUTHORITY } from "./constants";
 import { IDL, Vaults } from "./idl/vaults";
 import {
@@ -158,13 +158,27 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        // TODO parse accounts
+        const adapterAccounts: AccountMeta[] = group.adapterInfos.map((info) => {
+            return {
+                isSigner: false,
+                isWritable: false,
+                pubkey: web3.PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from("Adapter"),
+                        iMint.toBuffer()
+                    ],
+                    info.adapter
+                )[0]
+            }
+        });
+
         return this.program.methods
             .editVault(vaultIndex, newStartTimestamp ?? null, newEndTimestamp ?? null)
             .accounts({
                 vaultAuthority: vaultAuthority,
                 group: group.publicKey
             })
+            .remainingAccounts(adapterAccounts)
             .instruction();
     }
 
