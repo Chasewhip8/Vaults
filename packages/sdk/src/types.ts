@@ -30,9 +30,11 @@ export type AdapterEntry = {
 export type Vault = {
     iMint: PublicKey,
     phase: VaultPhase,
+    jBalance: BN,
     startTimestamp: BN,
     endTimestamp: BN,
-    adaptersVerified: boolean
+    adaptersVerified: boolean,
+    fp32FeeRate: BN
 }
 
 export type VaultEvent<T> = {
