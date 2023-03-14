@@ -10,7 +10,7 @@ const navigation: { name: string; href: string }[] = [];
 const Navbar = (props: Props) => {
   return (
     <nav
-      className="flex items-center justify-between container mx-auto px-4 sm:px-6 lg:px-8 py-4"
+      className="flex items-center justify-between container mx-auto px-4 sm:px-6 lg:px-8 py-6"
       aria-label="Global"
     >
       <div className="flex lg:flex-1">
