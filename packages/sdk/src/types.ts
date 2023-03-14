@@ -1,5 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@project-serum/anchor";
+import Adapter from "./adapters/adapter";
+
+export type AdapterRegistry = Map<string, Adapter<any>>;
 
 export type AccountWithKey<T> = T & { publicKey: PublicKey };
 

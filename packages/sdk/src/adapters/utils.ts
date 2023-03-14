@@ -1,12 +1,5 @@
-import { AccountMeta, Group } from "../types";
+import { AccountMeta, AdapterRegistry, Group } from "../types";
 import { PublicKey } from "@solana/web3.js";
-import TestAdapter from "./TestAdapter";
-import Adapter from "./adapter";
-
-// PublicKey -> Adapter
-export const adapterRegistry: Map<string, Adapter> = new Map([
-    ["test", new TestAdapter()]
-]);
 
 function compactAndGenerate(accounts: AccountMeta[][], startingAccounts?: AccountMeta[]) {
     const accountMap: Map<PublicKey, AccountMeta> = new Map();
@@ -49,43 +42,42 @@ function compactAndGenerate(accounts: AccountMeta[][], startingAccounts?: Accoun
     }
 }
 
-
-export function generateDepositAccounts(group: Group, iMint: PublicKey, authority: PublicKey) {
-    return compactAndGenerate(group.adapterInfos.map((info) => {
-        const adapter = adapterRegistry.get(info.adapter.toBase58());
-        if (!adapter){
+export async function generateDepositAccounts(registry: AdapterRegistry, group: Group, iMint: PublicKey, authority: PublicKey) {
+    return compactAndGenerate(await Promise.all(group.adapterInfos.map(async (info) => {
+        const adapter = registry.get(info.adapter.toBase58());
+        if (!adapter) {
             throw Error("Adapter not found in registry! " + info.adapter.toBase58());
         }
         return adapter.generateDepositAccounts(group, iMint, authority);
-    }));
+    })));
 }
 
-export function generateRedeemAccounts(group: Group, iMint: PublicKey, authority: PublicKey) {
-    return compactAndGenerate(group.adapterInfos.map((info) => {
-        const adapter = adapterRegistry.get(info.adapter.toBase58());
+export async function generateRedeemAccounts(registry: AdapterRegistry, group: Group, iMint: PublicKey, authority: PublicKey) {
+    return compactAndGenerate(await Promise.all(group.adapterInfos.map(async (info) => {
+        const adapter = registry.get(info.adapter.toBase58());
         if (!adapter){
             throw Error("Adapter not found in registry! " + info.adapter.toBase58());
         }
         return adapter.generateRedeemAccounts(group, iMint, authority);
-    }));
+    })));
 }
 
-export function generateCrankAccounts(group: Group, iMint: PublicKey, startingAccounts?: AccountMeta[]) {
-    return compactAndGenerate(group.adapterInfos.map((info) => {
-        const adapter = adapterRegistry.get(info.adapter.toBase58());
+export async function generateCrankAccounts(registry: AdapterRegistry, group: Group, iMint: PublicKey, startingAccounts?: AccountMeta[]) {
+    return compactAndGenerate(await Promise.all(group.adapterInfos.map(async (info) => {
+        const adapter = registry.get(info.adapter.toBase58());
         if (!adapter){
             throw Error("Adapter not found in registry! " + info.adapter.toBase58());
         }
         return adapter.generateCrankAccounts(group, iMint);
-    }), startingAccounts);
+    })), startingAccounts);
 }
 
-export function generateCrankEditPhaseAccounts(group: Group, iMint: PublicKey) {
-    return compactAndGenerate(group.adapterInfos.map((info) => {
-        const adapter = adapterRegistry.get(info.adapter.toBase58());
+export async function generateCrankEditPhaseAccounts(registry: AdapterRegistry, group: Group, iMint: PublicKey) {
+    return compactAndGenerate(await Promise.all(group.adapterInfos.map(async (info) => {
+        const adapter = registry.get(info.adapter.toBase58());
         if (!adapter){
             throw Error("Adapter not found in registry! " + info.adapter.toBase58());
         }
         return adapter.generateCrankEditPhaseAccounts(group, iMint);
-    }));
+    })));
 }

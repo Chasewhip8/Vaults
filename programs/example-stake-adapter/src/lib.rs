@@ -6,10 +6,10 @@ mod instructions;
 mod contexts;
 mod state;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("26UqMok72V1y2gAkUfwsA14twZmFdFnVREgFM7x8jVvr");
 
 #[program]
-mod marinade_stake_adapter {
+mod example_stake_adapter {
     use super::*;
 
     /// Instruction to handle deposits from the vaults program, the vaults program has no idea what this program does

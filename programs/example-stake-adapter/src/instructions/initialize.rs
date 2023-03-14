@@ -15,6 +15,11 @@ pub struct Initialize<'info> {
         payer = payer,
         token::mint = base_mint,
         token::authority = adapter,
+        seeds = [
+            b"Stake",
+            i_mint.key().as_ref()
+        ],
+        bump
     )]
     stake_account: Box<Account<'info, TokenAccount>>,
     base_mint: Box<Account<'info, Mint>>,
@@ -42,13 +47,13 @@ impl<'info> Initialize<'info> {
 
     pub fn handle(&mut self, bump: u8) -> Result<()> {
         let adapter = &mut self.adapter;
-        
+
         adapter.internal_phase = Expired;
         adapter.stake_account = self.stake_account.key();
         adapter.i_mint = self.i_mint.key();
         adapter.bump = bump;
         adapter.base_mint = self.base_mint.key();
-        
+
         Ok(())
     }
 }

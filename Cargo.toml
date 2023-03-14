@@ -1,8 +1,7 @@
 [workspace]
 members = [
     "programs/*",
-    "external/marinade/libs/marinade-anchor-sdk",
-    "external/cpi-interface"
+    "external/marinade/libs/marinade-anchor-sdk"
 ]
 
 [profile.release]

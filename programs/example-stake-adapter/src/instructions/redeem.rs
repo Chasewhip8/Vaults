@@ -8,10 +8,7 @@ use crate::state::Adapter;
 pub struct Redeem<'info> {
     restricted: Restricted<'info>,
 
-    #[account(
-        mut,
-        token::mint = adapter.base_mint
-    )]
+    #[account(mut)]
     stake_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
@@ -19,9 +16,13 @@ pub struct Redeem<'info> {
         token::mint = adapter.base_mint
     )]
     user_account: Box<Account<'info, TokenAccount>>,
+    
+    #[account(
+        has_one = stake_account
+    )]
+    adapter: Account<'info, Adapter>,
 
     token_program: Program<'info, Token>,
-    adapter: Account<'info, Adapter>,
 }
 
 impl<'info> Redeem<'info> {

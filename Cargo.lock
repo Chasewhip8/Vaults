@@ -348,25 +348,6 @@ dependencies = [
 
 [[package]]
 name = "anchor-syn"
-version = "0.24.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03549dc2eae0b20beba6333b14520e511822a6321cdb1760f841064a69347316"
-dependencies = [
- "anyhow",
- "bs58 0.3.1",
- "heck",
- "proc-macro2",
- "proc-macro2-diagnostics",
- "quote",
- "serde",
- "serde_json",
- "sha2 0.9.9",
- "syn",
- "thiserror",
-]
-
-[[package]]
-name = "anchor-syn"
 version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0418bcb5daac3b8cb1b60d8fdb1d468ca36f5509f31fb51179326fae1028fdcc"
@@ -782,18 +763,6 @@ name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
-
-[[package]]
-name = "cpi-interface"
-version = "0.1.0"
-dependencies = [
- "anchor-syn 0.24.2",
- "anyhow",
- "heck",
- "proc-macro2",
- "quote",
- "syn",
-]
 
 [[package]]
 name = "cpufeatures"
@@ -2454,7 +2423,6 @@ dependencies = [
  "adapter-abi",
  "anchor-lang 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "anchor-spl",
- "cpi-interface",
  "solana-program",
 ]
 

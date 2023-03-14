@@ -70,9 +70,9 @@ pub mod vaults {
         amount_i: u64,
         amount_j: u64,
         crank_adapter_accounts: Vec<Vec<u8>>,
-        deposit_adapter_accounts: Vec<Vec<u8>>
+        redeem_adapter_accounts: Vec<Vec<u8>>
     ) -> Result<()> {
-        ctx.accounts.handle(vault_index, amount_i, amount_j, crank_adapter_accounts, deposit_adapter_accounts, ctx.remaining_accounts)
+        ctx.accounts.handle(vault_index, amount_i, amount_j, crank_adapter_accounts, redeem_adapter_accounts, ctx.remaining_accounts)
     }
 
     pub fn crank<'info>(

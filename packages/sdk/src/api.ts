@@ -11,7 +11,7 @@ import {
     TransactionInstruction,
     TransactionSignature
 } from "@solana/web3.js";
-import { AccountMeta, AdapterEntry, Group } from "./types";
+import { AccountMeta, AdapterEntry, AdapterRegistry, Group } from "./types";
 import { VAULT_AUTHORITY } from "./constants";
 import { IDL, Vaults } from "./idl/vaults";
 import {
@@ -20,10 +20,17 @@ import {
     generateDepositAccounts,
     generateRedeemAccounts
 } from "./adapters/utils";
+import Adapter from "./adapters/adapter";
+import ExampleAdapter from "./adapters/ExampleAdapter";
 
 export class SeagullVaultsProvider {
     private readonly _connection: Connection;
     private readonly _program: Program<Vaults>;
+
+    // PublicKey -> Adapter
+    private readonly adapterRegistry: AdapterRegistry = new Map([
+        ["test", new ExampleAdapter(this.connection)]
+    ]);
 
     public constructor(connection: Connection, programId: PublicKey, program?: Program<Vaults>) {
         this._connection = connection;
@@ -228,7 +235,7 @@ export class SeagullVaultsProvider {
         );
     }
 
-    public deposit(
+    public async deposit(
         group: Group,
         iMint: PublicKey,
         authority: PublicKey,
@@ -236,7 +243,7 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        const accountData = generateDepositAccounts(group, iMint, authority);
+        const accountData = await generateDepositAccounts(this.adapterRegistry, group, iMint, authority);
         return this.program.methods
             .deposit(vaultIndex, amount, accountData.index_data)
             .accounts({
@@ -264,7 +271,7 @@ export class SeagullVaultsProvider {
         );
     }
 
-    public redeem(
+    public async redeem(
         group: Group,
         iMint: PublicKey,
         authority: PublicKey,
@@ -273,8 +280,8 @@ export class SeagullVaultsProvider {
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        const redeemAccountData = generateRedeemAccounts(group, iMint, authority);
-        const crankAccountData = generateCrankAccounts(group, iMint, redeemAccountData.accounts); // Combine the accounts
+        const redeemAccountData = await generateRedeemAccounts(this.adapterRegistry, group, iMint, authority);
+        const crankAccountData = await generateCrankAccounts(this.adapterRegistry, group, iMint, redeemAccountData.accounts); // Combine the accounts
         return this.program.methods
             .redeem(vaultIndex, amount_i, amount_j, crankAccountData.index_data, redeemAccountData.index_data)
             .accounts({
@@ -303,15 +310,15 @@ export class SeagullVaultsProvider {
         );
     }
 
-    public crank(
+    public async crank(
         group: Group,
         iMint: PublicKey,
         payer: PublicKey
     ): Promise<TransactionInstruction> {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
-        const editPhaseAccountData = generateCrankEditPhaseAccounts(group, iMint);
-        const crankAccountData = generateCrankAccounts(group, iMint, editPhaseAccountData.accounts); // Combine the accounts
+        const editPhaseAccountData = await generateCrankEditPhaseAccounts(this.adapterRegistry, group, iMint);
+        const crankAccountData = await generateCrankAccounts(this.adapterRegistry, group, iMint, editPhaseAccountData.accounts); // Combine the accounts
         return this.program.methods
             .crank(vaultIndex, editPhaseAccountData.index_data, crankAccountData.index_data)
             .accounts({

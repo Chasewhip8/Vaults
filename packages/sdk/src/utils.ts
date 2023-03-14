@@ -30,3 +30,13 @@ export function findGroupAddress(jMint: PublicKey, vaultProgramId: PublicKey){
         vaultProgramId
     )[0]
 }
+
+export function findAdapterAccountAddress(i_Mint: PublicKey, adapterProgramId: PublicKey){
+    return findProgramAddressSync(
+        [
+            Buffer.from("Adapter"),
+            i_Mint.toBuffer()
+        ],
+        adapterProgramId
+    )[0]
+}
