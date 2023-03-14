@@ -6,11 +6,15 @@ skip-lint = false
 vaults = "GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd"
 example_stake_adapter = "26UqMok72V1y2gAkUfwsA14twZmFdFnVREgFM7x8jVvr"
 
+[programs.devnet]
+vaults = "GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd"
+example_stake_adapter = "26UqMok72V1y2gAkUfwsA14twZmFdFnVREgFM7x8jVvr"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "https://devnet.genesysgo.net/"
 wallet = "/home/chase/.config/solana/id.json"
 
 [scripts]

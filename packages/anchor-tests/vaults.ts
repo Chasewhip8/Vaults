@@ -22,6 +22,12 @@ async function getTime() {
     return Number(account.data.readBigInt64LE(account.data.length - 8));
 }
 
+function wait(time) {
+    return new Promise(resolve => {
+        setTimeout(resolve, time);
+    });
+}
+
 describe("vaults", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
@@ -30,7 +36,8 @@ describe("vaults", () => {
 
     const sdk = new seagull.SeagullVaultsProvider(
         anchor.getProvider().connection,
-        program.programId
+        program.programId,
+        anchor.AnchorProvider.env()
     );
 
     const exampleAdapterSDK = new ExampleAdapter (
