@@ -1,6 +1,7 @@
 use std::cmp::min;
 use anchor_lang::{Accounts};
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Mint, mint_to, MintTo, Token, TokenAccount};
 use crate::cpis::{adapter_deposit, execute_adapter_cpi};
 use crate::gen_group_signer_seeds;
@@ -25,8 +26,8 @@ pub struct Deposit<'info> {
     #[account(
         init_if_needed,
         payer = authority,
-        token::mint = j_mint,
-        token::authority = authority
+        associated_token::mint = j_mint,
+        associated_token::authority = authority
     )]
     j_account: Box<Account<'info, TokenAccount>>,
 
@@ -36,11 +37,12 @@ pub struct Deposit<'info> {
     #[account(
         init_if_needed,
         payer = authority,
-        token::mint = i_mint,
-        token::authority = authority
+        associated_token::mint = i_mint,
+        associated_token::authority = authority
     )]
     i_account: Box<Account<'info, TokenAccount>>,
 
+    associated_token_program: Program<'info, AssociatedToken>,
     token_program: Program<'info, Token>,
     system_program: Program<'info, System>
 }
@@ -50,7 +52,7 @@ impl<'info> Deposit<'info> {
         assert_ne!(amount, 0, "Deposit amount cannot be 0");
 
         let vault = self.group.vaults.get(vault_index as usize).unwrap();
-        assert!(!vault.adapters_verified, "Vault has unverified adapters!");
+        assert!(vault.adapters_verified, "Vault has unverified adapters!");
         assert_eq!(vault.phase, Active, "Vault can only be deposited into while in active mode!");
 
         // I mint verification, the init_vault instruction verifies everything else about the mint.
@@ -64,11 +66,11 @@ impl<'info> Deposit<'info> {
 
         msg!("Depositing {} to adapters.", amount);
 
+        msg!("Adapter Count: {}", self.group.adapter_infos.len());
         // Execute deposit instruction on all providers ensuring all succeed, summing the returned ij mint amounts.
         execute_adapter_cpi(
             &self.group.adapter_infos,
             &deposit_adapter_accounts, accounts,
-            8,
             |adapter_entry, adapter_program, adapter_accounts| {
                 // Calculate the actual amount passed into adapter program based on the ratio
                 let adapter_amount = amount.fp32_mul_floor(adapter_entry.ratio_fp32).unwrap();

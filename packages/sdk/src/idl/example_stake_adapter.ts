@@ -87,6 +87,11 @@ export type ExampleStakeAdapter = {
           ]
         },
         {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "stakeAccount",
           "isMut": true,
           "isSigner": false
@@ -97,15 +102,31 @@ export type ExampleStakeAdapter = {
           "isSigner": false
         },
         {
+          "name": "baseMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "adapter",
           "isMut": false,
           "isSigner": false,
           "relations": [
-            "stake_account"
+            "stake_account",
+            "base_mint"
           ]
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -392,6 +413,11 @@ export const IDL: ExampleStakeAdapter = {
           ]
         },
         {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "stakeAccount",
           "isMut": true,
           "isSigner": false
@@ -402,15 +428,31 @@ export const IDL: ExampleStakeAdapter = {
           "isSigner": false
         },
         {
+          "name": "baseMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "adapter",
           "isMut": false,
           "isSigner": false,
           "relations": [
-            "stake_account"
+            "stake_account",
+            "base_mint"
           ]
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         }

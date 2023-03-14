@@ -8,7 +8,7 @@ pub use crate::state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("26UqMok72V1y2gAkUfwsA14twZmFdFnVREgFM7x8jVvr");
 
 #[program]
 #[allow(unused_variables)]

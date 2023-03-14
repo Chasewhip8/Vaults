@@ -1,5 +1,5 @@
 use std::cmp::{min};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, format, Formatter};
 use anchor_lang::prelude::*;
 
 use crate::constants::{MAX_ADAPTERS, MAX_VAULTS};
@@ -83,7 +83,7 @@ impl ToAccountInfos for Vec<Vec<u8>> {
     ) -> Vec<&'a T> {
         let indexes = self.get(index).unwrap();
         indexes.iter()
-            .map(|index| data.get(offset + *index as usize).expect("Value does not exist in data at index!"))
+            .map(|index| data.get(offset + *index as usize).unwrap_or_else(|| panic!("Value does not exist in data at index! {}", offset + *index as usize)))
             .collect::<Vec<_>>()
     }
 }

@@ -46,6 +46,11 @@ pub fn calc_deposit_return_adapter(
     i_supply: u64,
     provider_balance: u64
 ) -> u64 {
+    // TODO check if needs constraint on provider_balance.
+    if i_supply == 0 {
+        return adapter_amount;
+    }
+
     adapter_amount
         .checked_mul(i_supply)
         .unwrap()

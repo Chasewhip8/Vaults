@@ -189,7 +189,7 @@ export type Vaults = {
         {
           "name": "jAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "iMint",
@@ -199,7 +199,12 @@ export type Vaults = {
         {
           "name": "iAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -253,7 +258,7 @@ export type Vaults = {
         {
           "name": "jAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "iMint",
@@ -263,7 +268,7 @@ export type Vaults = {
         {
           "name": "iAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -296,7 +301,7 @@ export type Vaults = {
           }
         },
         {
-          "name": "depositAdapterAccounts",
+          "name": "redeemAdapterAccounts",
           "type": {
             "vec": "bytes"
           }
@@ -652,7 +657,7 @@ export const IDL: Vaults = {
         {
           "name": "jAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "iMint",
@@ -662,7 +667,12 @@ export const IDL: Vaults = {
         {
           "name": "iAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -716,7 +726,7 @@ export const IDL: Vaults = {
         {
           "name": "jAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "iMint",
@@ -726,7 +736,7 @@ export const IDL: Vaults = {
         {
           "name": "iAccount",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -759,7 +769,7 @@ export const IDL: Vaults = {
           }
         },
         {
-          "name": "depositAdapterAccounts",
+          "name": "redeemAdapterAccounts",
           "type": {
             "vec": "bytes"
           }

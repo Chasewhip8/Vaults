@@ -54,17 +54,18 @@ impl<'info> EditVault<'info> {
             msg!("Verifying Adapters");
             vault.adapters_verified = true; // Set up here to allow borrow checker to release vaults reference.
 
+            assert_ne!(adapters_len, 0, "Cannot verify with 0 adapters!");
             assert_eq!(accounts.len(), adapters_len, "Incorrect amount of adapters to verify!");
 
             let i_mint = vault.i_mint;
             for (index, adapter_info) in group.adapter_infos.iter().enumerate() {
-                let expected_account = Pubkey::create_program_address(
+                let (expected_account, _) = Pubkey::find_program_address(
                     &[
                         b"Adapter",
                         i_mint.as_ref()
                     ],
                     &adapter_info.adapter
-                ).unwrap();
+                );
 
                 let account = accounts.get(index).unwrap();
 

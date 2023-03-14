@@ -57,7 +57,6 @@ impl<'info> Crank<'info> {
         execute_adapter_cpi(
             &self.group.adapter_infos,
             &crank_adapter_accounts, accounts,
-            3,
             |_, adapter_program, adapter_accounts| {
                 adapter_crank(
                     &self.payer,
@@ -72,7 +71,7 @@ impl<'info> Crank<'info> {
 
     fn switch_adapter_phase(
         &self,
-        adapter_infos: &Vec<AdapterEntry>,
+        adapter_infos: &[AdapterEntry],
         edit_phase_adapter_accounts: &Vec<Vec<u8>>,
         accounts: &[AccountInfo<'info>],
         new_phase: VaultPhase,
@@ -83,7 +82,6 @@ impl<'info> Crank<'info> {
         execute_adapter_cpi(
             adapter_infos,
             edit_phase_adapter_accounts, accounts,
-            3,
             |_, adapter_program, adapter_accounts| {
                 let new_adapter_phase = adapter_edit_phase(
                     &self.group,

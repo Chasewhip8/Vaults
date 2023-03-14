@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount, transfer, Transfer};
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::{Mint, Token, TokenAccount, transfer, Transfer};
 use crate::contexts::*;
 use crate::gen_adapter_signer_seeds;
 use crate::state::Adapter;
@@ -9,20 +10,29 @@ pub struct Redeem<'info> {
     restricted: Restricted<'info>,
 
     #[account(mut)]
+    user: Signer<'info>,
+
+    #[account(mut)]
     stake_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        mut,
-        token::mint = adapter.base_mint
+        init_if_needed,
+        payer = user,
+        associated_token::mint = base_mint,
+        associated_token::authority = user
     )]
     user_account: Box<Account<'info, TokenAccount>>,
+    base_mint: Box<Account<'info, Mint>>,
     
     #[account(
-        has_one = stake_account
+        has_one = stake_account,
+        has_one = base_mint
     )]
     adapter: Account<'info, Adapter>,
 
     token_program: Program<'info, Token>,
+    associated_token_program: Program<'info, AssociatedToken>,
+    system_program: Program<'info, System>,
 }
 
 impl<'info> Redeem<'info> {

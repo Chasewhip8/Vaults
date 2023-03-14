@@ -23,10 +23,8 @@ pub struct Redeem<'info> {
     j_mint: Box<Account<'info, Mint>>, // Verifying it is the same mint inside of the group above ensures everything else.
 
     #[account(
-        init_if_needed,
-        payer = authority,
-        token::mint = j_mint,
-        token::authority = authority
+        mut,
+        token::mint = j_mint
     )]
     j_account: Box<Account<'info, TokenAccount>>,
 
@@ -34,10 +32,8 @@ pub struct Redeem<'info> {
     i_mint: Box<Account<'info, Mint>>, // Verified below
 
     #[account(
-        init_if_needed,
-        payer = authority,
-        token::mint = i_mint,
-        token::authority = authority
+        mut,
+        token::mint = i_mint
     )]
     i_account: Box<Account<'info, TokenAccount>>,
 
@@ -50,7 +46,7 @@ impl<'info> Redeem<'info> {
         assert_ne!(amount_i + amount_j, 0, "Redeem amounts summed to 0.");
 
         let vault = self.group.vaults.get(vault_index as usize).unwrap();
-        assert!(!vault.adapters_verified, "Vault has unverified adapters!");
+        assert!(vault.adapters_verified, "Vault has unverified adapters!");
 
         // I mint verification, the init_vault instruction verifies everything else about the mint.
         assert_eq!(self.i_mint.key(), vault.i_mint.key(), "Invalid i_mint supplied in context!");
@@ -86,7 +82,6 @@ impl<'info> Redeem<'info> {
             &self.group.adapter_infos,
             &[crank_adapter_accounts, redeem_adapter_accounts],
             accounts,
-            8,
             |adapter_entry, adapter_program, adapter_accounts_list| {
                 let mut adapter_accounts_iter = adapter_accounts_list.into_iter();
 

@@ -22,15 +22,14 @@ import {
 } from "./adapters/utils";
 import Adapter from "./adapters/adapter";
 import ExampleAdapter from "./adapters/ExampleAdapter";
+import { findAssociatedTokenAddress } from "./utils";
 
 export class SeagullVaultsProvider {
     private readonly _connection: Connection;
     private readonly _program: Program<Vaults>;
 
     // PublicKey -> Adapter
-    private readonly adapterRegistry: AdapterRegistry = new Map([
-        ["test", new ExampleAdapter(this.connection)]
-    ]);
+    private readonly adapterRegistry: AdapterRegistry;
 
     public constructor(connection: Connection, programId: PublicKey, program?: Program<Vaults>) {
         this._connection = connection;
@@ -50,6 +49,20 @@ export class SeagullVaultsProvider {
                 { commitment: connection.commitment }
             )
         );
+
+        this.adapterRegistry = new Map([
+            ["26UqMok72V1y2gAkUfwsA14twZmFdFnVREgFM7x8jVvr", new ExampleAdapter(this.connection)]
+        ]);
+    }
+
+    private getAdapterProgramAccountMetas(group: Group): AccountMeta[] {
+        return group.adapterInfos.map((key) => {
+            return {
+                isSigner: false,
+                isWritable: false,
+                pubkey: new PublicKey(key.adapter)
+            }
+        })
     }
 
     private async sendTransactionAndConfirm(
@@ -207,7 +220,6 @@ export class SeagullVaultsProvider {
 
     public editGroup(
         group: Group,
-        iMint: PublicKey,
         newAdapters: AdapterEntry[],
         vaultAuthority: PublicKey = VAULT_AUTHORITY
     ): Promise<TransactionInstruction> {
@@ -223,14 +235,13 @@ export class SeagullVaultsProvider {
     public async editGroupRpc(
         signers: anchor.web3.Signer[],
         group: Group,
-        iMint: PublicKey,
         newAdapters: AdapterEntry[],
         vaultAuthority: PublicKey = VAULT_AUTHORITY,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
         return this.sendTransactionAndConfirm(
             signers,
-            [await this.editGroup(group, iMint, newAdapters, vaultAuthority)],
+            [await this.editGroup(group, newAdapters, vaultAuthority)],
             confirmOptions
         );
     }
@@ -250,9 +261,11 @@ export class SeagullVaultsProvider {
                 authority: authority,
                 group: group.publicKey,
                 jMint: group.jMint,
-                iMint: iMint
+                jAccount: findAssociatedTokenAddress(authority, group.jMint),
+                iMint: iMint,
+                iAccount: findAssociatedTokenAddress(authority, iMint)
             })
-            .remainingAccounts(accountData.accounts)
+            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...accountData.accounts])
             .instruction();
     }
 
@@ -290,7 +303,7 @@ export class SeagullVaultsProvider {
                 jMint: group.jMint,
                 iMint: iMint
             })
-            .remainingAccounts(crankAccountData.accounts)
+            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...crankAccountData.accounts])
             .instruction();
     }
 
@@ -319,13 +332,14 @@ export class SeagullVaultsProvider {
 
         const editPhaseAccountData = await generateCrankEditPhaseAccounts(this.adapterRegistry, group, iMint);
         const crankAccountData = await generateCrankAccounts(this.adapterRegistry, group, iMint, editPhaseAccountData.accounts); // Combine the accounts
+
         return this.program.methods
             .crank(vaultIndex, editPhaseAccountData.index_data, crankAccountData.index_data)
             .accounts({
                 payer: payer,
                 group: group.publicKey
             })
-            .remainingAccounts(crankAccountData.accounts)
+            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...crankAccountData.accounts])
             .instruction();
     }
 

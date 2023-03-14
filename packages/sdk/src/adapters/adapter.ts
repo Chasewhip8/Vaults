@@ -1,6 +1,7 @@
 import { AccountMeta, Group } from "../types";
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
-import { AnchorProvider, Idl, Program, Provider } from "@project-serum/anchor";
+import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { AnchorProvider, Idl, Program, Provider, web3 } from "@project-serum/anchor";
+import * as anchor from "@project-serum/anchor";
 
 export default abstract class Adapter<T extends Idl> {
     private readonly _connection: Connection;
@@ -24,6 +25,23 @@ export default abstract class Adapter<T extends Idl> {
                 { commitment: connection.commitment }
             )
         );
+    }
+
+    protected async sendTransactionAndConfirm(
+        signers: anchor.web3.Signer[],
+        instruction: TransactionInstruction[],
+        confirmOptions?: anchor.web3.ConfirmOptions
+    ): Promise<anchor.web3.TransactionSignature> {
+        const sendConfig = confirmOptions ?? { commitment: this.connection.commitment };
+
+        const transaction = new Transaction({
+            feePayer: signers[0].publicKey,
+            ...(await this.connection.getLatestBlockhash(sendConfig.commitment))
+        });
+        transaction.add(...instruction);
+        transaction.sign(...signers);
+
+        return web3.sendAndConfirmTransaction(this.connection, transaction, signers, sendConfig);
     }
 
     get connection() {

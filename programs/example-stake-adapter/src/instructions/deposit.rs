@@ -47,6 +47,8 @@ impl<'info> Deposit<'info> {
         // Get the fresh state!
         self.stake_account.reload()?;
 
+        msg!("New Total Staked: {}", self.stake_account.amount);
+
         Ok(self.stake_account.amount)
     }
 }

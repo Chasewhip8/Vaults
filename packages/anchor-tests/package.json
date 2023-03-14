@@ -13,6 +13,7 @@
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "@seagullfinance/seagull": "link:./packages/sdk"
+    "@seagullfinance/seagull": "link:./packages/sdk",
+    "@solana/spl-token": "^0.3.7"
   }
 }

@@ -33,7 +33,7 @@ function compactAndGenerate(accounts: AccountMeta[][], startingAccounts?: Accoun
         for (let offset = 0; offset < adapterAccounts.length; offset++){
             accountIndexBytes[offset] = flatAccountArray.indexOf(adapterAccounts[offset]);
         }
-        adapterIndexBufferList.push()
+        adapterIndexBufferList[adapterOffset] = accountIndexBytes;
     }
 
     return {
