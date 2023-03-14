@@ -1,10 +1,15 @@
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Badge from "./Badge";
 import Input from "./Input";
 import Modal from "./Modal";
 import PaddedIcon from "./PaddedIcon";
 import VaultInput from "./VaultInput";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { SeagullVaultsProvider } from "@seagullfinance/seagull";
+import { PublicKey } from "@solana/web3.js";
+import { AnchorProvider } from "@project-serum/anchor";
+import BN from "bn.js";
 
 type DepositProps = {
   open: boolean;
@@ -16,20 +21,20 @@ const assetRatio = .35
 const DepositModal = (props: DepositProps) => {
   const [asset1DepositAmount, setAsset1DepositAmount] = useState("0.00");
   const asset2DepositAmount = (parseFloat(asset1DepositAmount) / assetRatio).toFixed(2)
-  // const { connection } = useConnection();
-  // const wallet = useAnchorWallet();
+  const { connection } = useConnection();
+  const wallet = useAnchorWallet();
 
-  // const sdk = useMemo(() => {
-  //   if (!wallet) {
-  //     return;
-  //   }
+  const sdk = useMemo(() => {
+    if (!wallet) {
+      return;
+    }
 
-  //   return new SeagullVaultsProvider(
-  //     connection,
-  //     new PublicKey("GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd"),
-  //     new AnchorProvider(connection, wallet, { commitment: "confirmed" })
-  //   );
-  // }, [connection, wallet]);
+    return new SeagullVaultsProvider(
+      connection,
+      new PublicKey("GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd"),
+      new AnchorProvider(connection, wallet, { commitment: "confirmed" })
+    );
+  }, [connection, wallet]);
 
   return (
     <Modal
@@ -87,20 +92,20 @@ const DepositModal = (props: DepositProps) => {
       <button
         className="bg-cyan-600 text-white font-bold rounded-md px-4 py-2 mt-8 flex-1"
         onClick={async () => {
-          // if (!wallet) {
-          //   return;
-          // }
-          // const group = await sdk?.fetchGroup(new PublicKey(""));
-          // if (!group) {
-          //   return;
-          // }
-          // await sdk?.depositRpc(
-          //   [],
-          //   group,
-          //   new PublicKey(""),
-          //   wallet.publicKey,
-          //   new BN(Math.floor(depositAmount * 10 ** 9))
-          // );
+          if (!wallet) {
+            return;
+          }
+          const group = await sdk?.fetchGroup(new PublicKey("9SJXMSppEe8A5YYhJrESuqXHzFVNR1jp3exwpcqsCcLD"));
+          if (!group) {
+            return;
+          }
+          await sdk?.depositRpc(
+            [],
+            group,
+            new PublicKey("Fsdk5gur6iyFsqVoo2hLB9Z99X4ZVYstAV26akd4yEFv"),
+            wallet.publicKey,
+            new BN(Math.floor(Number(0.001) * 10 ** 9))
+          );
         }}
       >
         Deposit
