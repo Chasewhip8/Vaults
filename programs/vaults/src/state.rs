@@ -147,8 +147,8 @@ mod tests {
             vec!(3, 2)
         );
 
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 0, None), vec![&5, &8]);
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 1, None), vec![&6, &9]);
-        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, None), vec![&8, &7]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 0, 0), vec![&5, &8]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 1, 0), vec![&6, &9]);
+        assert_eq!(test_indexes.try_indexes_to_data(test_data, 2, 0), vec![&8, &7]);
     }
 }

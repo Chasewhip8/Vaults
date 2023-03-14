@@ -106,8 +106,8 @@ export default class ExampleAdapter extends Adapter<ExampleStakeAdapter> {
             // user_account
             {
                 pubkey: findAssociatedTokenAddress(authority, adapterAccount.baseMint),
-                isSigner: true,
-                isWritable: false,
+                isSigner: false,
+                isWritable: true,
             },
             // base_mint
             {

@@ -301,7 +301,9 @@ export class SeagullVaultsProvider {
                 authority: authority,
                 group: group.publicKey,
                 jMint: group.jMint,
-                iMint: iMint
+                jAccount: findAssociatedTokenAddress(authority, group.jMint),
+                iMint: iMint,
+                iAccount: findAssociatedTokenAddress(authority, iMint)
             })
             .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...crankAccountData.accounts])
             .instruction();

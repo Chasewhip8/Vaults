@@ -176,7 +176,7 @@ describe("vaults", () => {
         )
     });
 
-/*    it("Redeem 1!", async () => {
+    it("Redeem 1!", async () => {
         await sdk.redeemRpc(
             [userKeypair],
             group,
@@ -185,7 +185,7 @@ describe("vaults", () => {
             new BN(10 ** 9),
             new BN(10 ** 9)
         )
-    });*/
+    });
 });
 
 //       console.log("Group: " + JSON.stringify(group, null, 2));
