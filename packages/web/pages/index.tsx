@@ -16,8 +16,16 @@ import Badge from "@components/Badge";
 import PaddedIcon from "@components/PaddedIcon";
 import PortfolioChart from "@components/Chart/PortfolioChart";
 import ColumnDisplay from "@components/ColumnDisplay";
-import { useState } from "react";
+import React, { useMemo, useState } from "react";
 import VaultProgressBar from "@components/Dashboard/VaultProgressBar";
+import Providers from "@components/Providers";
+import { Combobox } from "@headlessui/react";
+import { log } from "next/dist/server/typescript/utils";
+import { SeagullVaultsProvider } from "@node_modules/@seagullfinance/seagull";
+import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
+import { AnchorProvider } from "@project-serum/anchor";
+import BN from "bn.js";
 
 const Home = () => {
   const [openVaultModal, setOpenVaultModal] = useState(false);
@@ -92,25 +100,25 @@ const Home = () => {
         </p>
         <div className="space-y-8">
           <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
-            <VaultCard onClick={handleOpenVaultModal} />
-            <VaultCard onClick={handleOpenVaultModal} />
-            <VaultCard onClick={handleOpenVaultModal} />
+            <VaultCard quarterDaysRemaining={[10, 90, 180, 320]} token1="mSOL" token2="jitoSOL" apy={20.35} ratio={65} onClick={handleOpenVaultModal}/>
+            <VaultCard quarterDaysRemaining={[320, 10, 90, 180]} token1="USDC" token2="USDT" apy={10.2} ratio={50} onClick={handleOpenVaultModal}/>
+            <VaultCard quarterDaysRemaining={[180, 320, 10, 90]} token1="ETH" token2="SOL" apy={8.25} ratio={20} onClick={handleOpenVaultModal}/>
           </div>
           <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
-            <VaultCard onClick={handleOpenVaultModal} />
-            <VaultCard onClick={handleOpenVaultModal} />
+            <VaultCard quarterDaysRemaining={[320, 10, 90, 180]} token1="BONK" token2="RAY" apy={3.35} ratio={65} onClick={handleOpenVaultModal}/>
+            <VaultCard quarterDaysRemaining={[180, 320, 10, 90]} token1="mSOL" token2="jitoSOL" apy={20.35} ratio={65} onClick={handleOpenVaultModal}/>
           </div>
         </div>
-        <Modal
+{/*        <Modal
           className="bg-slate-800 text-white"
           open={openVaultModal}
           setOpen={setOpenVaultModal}
         >
           <div className="flex flex-row justify-between items-start">
             <div className="flex flex-col space-y-2">
-              <h1 className="text-2xl font-bold">Vault #123</h1>
+              <h1 className="text-2xl font-bold">mSOL-jitoSOL</h1>
               <h3 className="text-xl font-extrabold">
-                243.33% <span className="italic text-cyan-500">APR</span>
+                20.35% <span className="italic text-cyan-500">APR</span>
               </h3>
               <div className="flex flex-row space-x-1">
                 <span className="text-lg font-semibold text-gray-400">
@@ -118,12 +126,12 @@ const Home = () => {
                 </span>
                 <div className="space-x-1.5">
                   <Badge
-                    label="50% ETH"
+                    label="50% mSOL"
                     backgroundColor="bg-purple-500"
                     size="large"
                   />
                   <Badge
-                    label="50% SOL"
+                    label="50% jitoSOL"
                     backgroundColor="bg-green-600"
                     size="large"
                   />
@@ -191,7 +199,7 @@ const Home = () => {
               </button>
             </div>
           </div>
-        </Modal>
+        </Modal>*/}
         <Modal
           className="bg-slate-800 text-white"
           open={openVaultModal}
@@ -199,9 +207,9 @@ const Home = () => {
         >
           <div className="flex flex-row justify-between items-start">
             <div className="flex flex-col space-y-2">
-              <h1 className="text-2xl font-bold">Vault #123</h1>
+              <h1 className="text-2xl font-bold">SOL Vault</h1>
               <h3 className="text-xl font-extrabold">
-                243.33% <span className="italic text-cyan-500">APR</span>
+                20.35% <span className="italic text-cyan-500">APR</span>
               </h3>
               <div className="flex flex-row space-x-1">
                 <span className="text-lg font-semibold text-gray-400">
@@ -209,12 +217,12 @@ const Home = () => {
                 </span>
                 <div className="space-x-1.5">
                   <Badge
-                    label="50% ETH"
+                    label="65% mSOL"
                     backgroundColor="bg-purple-500"
                     size="large"
                   />
                   <Badge
-                    label="50% SOL"
+                    label="35% jitoSOL"
                     backgroundColor="bg-green-600"
                     size="large"
                   />
@@ -243,11 +251,11 @@ const Home = () => {
             <h3 className="text-xl font-semibold">Details</h3>
             <ColumnDisplay
               fields={[
-                { title: "APY", content: "7.23%", columns: "one" },
+                { title: "APY", content: "23.23%", columns: "one" },
                 { title: "Total Deposits", content: "94,313", columns: "one" },
                 {
                   title: "Composition",
-                  content: "50% SOL, 50% ETH",
+                  content: "65% mSOL, 35% jitoSOL",
                   columns: "one",
                 },
                 {
@@ -286,26 +294,112 @@ const Home = () => {
             </div>
           </div>
         </Modal>
-        <Modal
-          className="bg-slate-800 text-white"
-          open={openDepositModal}
-          setOpen={setOpenDepositModal}
-        >
-          <div className="flex flex-row justify-between items-start">
-            <div className="flex flex-col space-y-2">
-              <h1 className="text-2xl font-bold">Deposit</h1>
-            </div>
-            <PaddedIcon
-              onClick={() => setOpenDepositModal(false)}
-              className="hover:scale-110 transition-all duration-200 cursor-pointer"
-              icon={XMarkIcon}
-              size="large"
-            />
-          </div>
-        </Modal>
+        <DepositModal open={openDepositModal} setOpen={setOpenDepositModal}/>
       </section>
     </Layout>
   );
 };
+
+const quarters = ["Q1", "Q2", "Q3", "Q4"]
+
+function VaultInput() {
+  const [selectedPerson, setSelectedPerson] = useState(quarters[0])
+  const [query, setQuery] = useState('')
+
+  const filteredPeople =
+      query === ''
+          ? quarters
+          : quarters.filter((data) => {
+            return data.toLowerCase().includes(query.toLowerCase())
+          });
+
+  return (
+      <div className={"text-black"}>
+        <Combobox value={selectedPerson} onChange={setSelectedPerson}>
+          <Combobox.Input onChange={(event) => setQuery(event.target.value)} />
+          <Combobox.Options>
+            {filteredPeople.map((person) => (
+                <Combobox.Option key={person} value={person}>
+                  {person}
+                </Combobox.Option>
+            ))}
+          </Combobox.Options>
+        </Combobox>
+      </div>
+  )
+}
+
+interface DepositProps {
+  open: boolean,
+  setOpen: (value: boolean) => void
+}
+
+const DepositModal = (props: DepositProps) => {
+  const [depositAmount, setDepositAmount] = useState(0);
+  const { connection } = useConnection();
+  const wallet = useAnchorWallet();
+
+  const sdk = useMemo(() => {
+    if (!wallet) {
+      return;
+    }
+
+    return new SeagullVaultsProvider(
+        connection, new PublicKey("GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd"),
+        new AnchorProvider(connection, wallet, { commitment: "confirmed" })
+    )
+  }, [connection, wallet]);
+
+  return (
+      <Modal
+          className="bg-slate-800 text-white"
+          open={props.open}
+          setOpen={props.setOpen}
+      >
+        <div className="flex flex-row justify-between items-start">
+          <div className="flex flex-col space-y-2">
+            <h1 className="text-2xl font-bold">Deposit</h1>
+          </div>
+          <PaddedIcon
+              onClick={() => props.setOpen(false)}
+              className="hover:scale-110 transition-all duration-200 cursor-pointer"
+              icon={XMarkIcon}
+              size="large"
+          />
+        </div>
+        <div>
+          <h3>Select Vault</h3>
+          <VaultInput/>
+          <h3>Deposit Amount</h3>
+          <input
+              className={"text-black"}
+              type="number"
+              onChange={(event) => setDepositAmount(event.target.valueAsNumber)}
+          />
+        </div>
+        <button
+          onClick={async () => {
+            if (!wallet){
+              return;
+            }
+
+            const group = await sdk?.fetchGroup(new PublicKey(""));
+
+            if (!group){
+              return;
+            }
+
+            await sdk?.depositRpc(
+                [],
+                group,
+                new PublicKey(""),
+                wallet.publicKey,
+                new BN(Math.floor(depositAmount * 10**9))
+            )
+          }}
+        >Deposit</button>
+      </Modal>
+  )
+}
 
 export default Home;

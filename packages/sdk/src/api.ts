@@ -31,11 +31,11 @@ export class SeagullVaultsProvider {
     // PublicKey -> Adapter
     private readonly adapterRegistry: AdapterRegistry;
 
-    public constructor(connection: Connection, programId: PublicKey, program?: Program<Vaults>) {
+    public constructor(connection: Connection, programId: PublicKey, anchorWallet?: AnchorProvider,  program?: Program<Vaults>) {
         this._connection = connection;
         this._program = program ?? this.createProgram(
             programId,
-            new AnchorProvider(
+            anchorWallet ?? new AnchorProvider(
                 connection,
                 {
                     publicKey: PublicKey.default,
@@ -105,17 +105,25 @@ export class SeagullVaultsProvider {
         };
     }
 
-    public initGroup(
+    private initGroupAnchor(
         jMint: PublicKey,
         decimals: number,
         vaultAuthority: PublicKey = VAULT_AUTHORITY
-    ): Promise<TransactionInstruction> {
+    ) {
         return this.program.methods
             .initGroup(decimals)
             .accounts({
                 vaultAuthority: vaultAuthority,
                 jMint: jMint
-            })
+            });
+    }
+
+    public initGroup(
+        jMint: PublicKey,
+        decimals: number,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY
+    ): Promise<TransactionInstruction> {
+        return this.initGroupAnchor(jMint, decimals, vaultAuthority)
             .instruction();
     }
 
@@ -126,11 +134,27 @@ export class SeagullVaultsProvider {
         vaultAuthority: PublicKey = VAULT_AUTHORITY,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.initGroup(jMint, decimals, vaultAuthority)],
-            confirmOptions
-        );
+        return this.initGroupAnchor(jMint, decimals, vaultAuthority)
+            .signers(signers)
+            .rpc(confirmOptions);
+    }
+
+    private initVaultAnchor(
+        group: Group,
+        iMint: PublicKey,
+        startTimestamp: BN,
+        endTimestamp: BN,
+        fp32FeeRate: BN,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY
+    ) {
+        return this.program.methods
+            .initVault(startTimestamp, endTimestamp, fp32FeeRate)
+            .accounts({
+                vaultAuthority: vaultAuthority,
+                group: group.publicKey,
+                iMint: iMint,
+                jMint: group.jMint
+            });
     }
 
     public initVault(
@@ -141,14 +165,7 @@ export class SeagullVaultsProvider {
         fp32FeeRate: BN,
         vaultAuthority: PublicKey = VAULT_AUTHORITY
     ): Promise<TransactionInstruction> {
-        return this.program.methods
-            .initVault(startTimestamp, endTimestamp, fp32FeeRate)
-            .accounts({
-                vaultAuthority: vaultAuthority,
-                group: group.publicKey,
-                iMint: iMint,
-                jMint: group.jMint
-            })
+        return this.initVaultAnchor(group, iMint, startTimestamp, endTimestamp, fp32FeeRate, vaultAuthority)
             .instruction();
     }
 
@@ -162,20 +179,18 @@ export class SeagullVaultsProvider {
         vaultAuthority: PublicKey = VAULT_AUTHORITY,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.initVault(group, iMint, startTimestamp, endTimestamp, fp32FeeRate, vaultAuthority)],
-            confirmOptions
-        );
+        return this.initVaultAnchor(group, iMint, startTimestamp, endTimestamp, fp32FeeRate, vaultAuthority)
+            .signers(signers)
+            .rpc(confirmOptions);
     }
 
-    public editVault(
+    private editVaultAnchor(
         group: Group,
         iMint: PublicKey,
         newStartTimestamp?: BN,
         newEndTimestamp?: BN,
         vaultAuthority: PublicKey = VAULT_AUTHORITY
-    ): Promise<TransactionInstruction> {
+    ) {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
         const adapterAccounts: AccountMeta[] = group.adapterInfos.map((info) => {
@@ -198,7 +213,17 @@ export class SeagullVaultsProvider {
                 vaultAuthority: vaultAuthority,
                 group: group.publicKey
             })
-            .remainingAccounts(adapterAccounts)
+            .remainingAccounts(adapterAccounts);
+    }
+
+    public editVault(
+        group: Group,
+        iMint: PublicKey,
+        newStartTimestamp?: BN,
+        newEndTimestamp?: BN,
+        vaultAuthority: PublicKey = VAULT_AUTHORITY
+    ): Promise<TransactionInstruction> {
+        return this.editVaultAnchor(group, iMint, newStartTimestamp, newEndTimestamp, vaultAuthority)
             .instruction();
     }
 
@@ -211,11 +236,22 @@ export class SeagullVaultsProvider {
         vaultAuthority: PublicKey = VAULT_AUTHORITY,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.editVault(group, iMint, newStartTimestamp, newEndTimestamp, vaultAuthority)],
-            confirmOptions
-        );
+        return this.editVaultAnchor(group, iMint, newStartTimestamp, newEndTimestamp, vaultAuthority)
+            .signers(signers)
+            .rpc(confirmOptions);
+    }
+
+    private editGroupAnchor(
+        group: Group,
+        newAdapters: AdapterEntry[],
+        vaultAuthority: PublicKey = VAULT_AUTHORITY
+    ) {
+        return this.program.methods
+            .editGroup(newAdapters)
+            .accounts({
+                vaultAuthority: vaultAuthority,
+                group: group.publicKey
+            });
     }
 
     public editGroup(
@@ -223,12 +259,7 @@ export class SeagullVaultsProvider {
         newAdapters: AdapterEntry[],
         vaultAuthority: PublicKey = VAULT_AUTHORITY
     ): Promise<TransactionInstruction> {
-        return this.program.methods
-            .editGroup(newAdapters)
-            .accounts({
-                vaultAuthority: vaultAuthority,
-                group: group.publicKey
-            })
+        return this.editGroupAnchor(group, newAdapters, vaultAuthority)
             .instruction();
     }
 
@@ -239,19 +270,17 @@ export class SeagullVaultsProvider {
         vaultAuthority: PublicKey = VAULT_AUTHORITY,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.editGroup(group, newAdapters, vaultAuthority)],
-            confirmOptions
-        );
+        return this.editGroupAnchor(group, newAdapters, vaultAuthority)
+            .signers(signers)
+            .rpc(confirmOptions);
     }
 
-    public async deposit(
+    public async depositAnchor(
         group: Group,
         iMint: PublicKey,
         authority: PublicKey,
         amount: BN
-    ): Promise<TransactionInstruction> {
+    ) {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
         const accountData = await generateDepositAccounts(this.adapterRegistry, group, iMint, authority);
@@ -265,7 +294,16 @@ export class SeagullVaultsProvider {
                 iMint: iMint,
                 iAccount: findAssociatedTokenAddress(authority, iMint)
             })
-            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...accountData.accounts])
+            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...accountData.accounts]);
+    }
+
+    public async deposit(
+        group: Group,
+        iMint: PublicKey,
+        authority: PublicKey,
+        amount: BN
+    ): Promise<TransactionInstruction> {
+        return (await this.depositAnchor(group, iMint, authority, amount))
             .instruction();
     }
 
@@ -277,20 +315,18 @@ export class SeagullVaultsProvider {
         amount: BN,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.deposit(group, iMint, authority, amount)],
-            confirmOptions
-        );
+        return (await this.depositAnchor(group, iMint, authority, amount))
+            .signers(signers)
+            .rpc(confirmOptions);
     }
 
-    public async redeem(
+    public async redeemAnchor(
         group: Group,
         iMint: PublicKey,
         authority: PublicKey,
         amount_i: BN,
         amount_j: BN
-    ): Promise<TransactionInstruction> {
+    ) {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
         const redeemAccountData = await generateRedeemAccounts(this.adapterRegistry, group, iMint, authority);
@@ -306,6 +342,16 @@ export class SeagullVaultsProvider {
                 iAccount: findAssociatedTokenAddress(authority, iMint)
             })
             .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...crankAccountData.accounts])
+    }
+
+    public async redeem(
+        group: Group,
+        iMint: PublicKey,
+        authority: PublicKey,
+        amount_i: BN,
+        amount_j: BN
+    ): Promise<TransactionInstruction> {
+        return (await this.redeemAnchor(group, iMint, authority, amount_i, amount_j))
             .instruction();
     }
 
@@ -318,18 +364,16 @@ export class SeagullVaultsProvider {
         amount_j: BN,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.redeem(group, iMint, authority, amount_i, amount_j)],
-            confirmOptions
-        );
+        return (await this.redeemAnchor(group, iMint, authority, amount_i, amount_j))
+            .signers(signers)
+            .rpc(confirmOptions);
     }
 
-    public async crank(
+    public async crankAnchor(
         group: Group,
         iMint: PublicKey,
         payer: PublicKey
-    ): Promise<TransactionInstruction> {
+    ) {
         const vaultIndex = group.vaults.findIndex((vault) => vault.iMint.equals(iMint));
 
         const editPhaseAccountData = await generateCrankEditPhaseAccounts(this.adapterRegistry, group, iMint);
@@ -341,7 +385,15 @@ export class SeagullVaultsProvider {
                 payer: payer,
                 group: group.publicKey
             })
-            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...crankAccountData.accounts])
+            .remainingAccounts([...this.getAdapterProgramAccountMetas(group), ...crankAccountData.accounts]);
+    }
+
+    public async crank(
+        group: Group,
+        iMint: PublicKey,
+        payer: PublicKey
+    ): Promise<TransactionInstruction> {
+        return (await this.crankAnchor(group, iMint, payer))
             .instruction();
     }
 
@@ -352,10 +404,8 @@ export class SeagullVaultsProvider {
         payer: PublicKey,
         confirmOptions?: anchor.web3.ConfirmOptions
     ): Promise<anchor.web3.TransactionSignature> {
-        return this.sendTransactionAndConfirm(
-            signers,
-            [await this.crank(group, iMint, payer)],
-            confirmOptions
-        );
+        return (await this.crankAnchor(group, iMint, payer))
+            .signers(signers)
+            .rpc(confirmOptions);
     }
 }
