@@ -1,8 +1,9 @@
 [features]
 seeds = true
 skip-lint = false
+
 [programs.localnet]
-vaults = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+vaults = "GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd"
 
 [registry]
 url = "https://api.apr.dev"

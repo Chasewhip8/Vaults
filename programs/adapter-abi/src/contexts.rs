@@ -13,9 +13,3 @@ pub struct Restricted<'info> {
 pub struct ICrank<'info> {
     pub payer: Signer<'info>,
 }
-
-#[derive(Accounts)]
-pub struct IInitialize<'info> {
-    payer: Signer<'info>,
-    i_mint: Box<Account<'info, Mint>>
-}

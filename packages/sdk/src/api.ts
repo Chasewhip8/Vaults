@@ -19,7 +19,7 @@ import {
     generateCrankEditPhaseAccounts,
     generateDepositAccounts,
     generateRedeemAccounts
-} from "./adapters/adapter";
+} from "./adapters/utils";
 
 export class SeagullVaultsProvider {
     private readonly _connection: Connection;

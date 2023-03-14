@@ -1036,6 +1036,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "example-stake-adapter"
+version = "0.1.0"
+dependencies = [
+ "adapter-abi",
+ "anchor-lang 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "anchor-spl",
+]
+
+[[package]]
 name = "feature-probe"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1366,16 +1375,6 @@ dependencies = [
  "solana-program",
  "syn",
  "syn-unnamed-struct",
-]
-
-[[package]]
-name = "marinade-stake-adapter"
-version = "0.1.0"
-dependencies = [
- "adapter-abi",
- "anchor-lang 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "anchor-spl",
- "marinade-anchor-sdk",
 ]
 
 [[package]]

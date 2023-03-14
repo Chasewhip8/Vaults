@@ -1,8 +1,13 @@
-import { Adapter } from "./adapter";
+
 import { PublicKey } from "@solana/web3.js";
 import { AccountMeta, Group } from "../types";
+import Adapter from "./adapter";
 
-export default class TestAdapter extends Adapter{
+export default class TestAdapter extends Adapter {
+    public constructor() {
+        super();
+    }
+
     generateCrankAccounts(group: Group, iMint: PublicKey) {
         return []
     }

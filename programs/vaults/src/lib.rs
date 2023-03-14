@@ -9,7 +9,7 @@ use crate::state::AdapterEntry;
 use anchor_lang::prelude::*;
 use instructions::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("GFBxbpxbQgnEst4ABx35rV4uW5oTbp85wpPagz39cUgd");
 
 #[program]
 pub mod vaults {

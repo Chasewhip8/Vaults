@@ -57,12 +57,4 @@ pub mod adapter_abi {
         msg!("Entered adapter_abi::crank dummy instruction");
         Ok(new_phase)
     }
-
-    /// Instruction to initialize the provider for a vault.
-    ///
-    /// returns: Result<(), Error>
-    pub fn initialize(ctx: Context<IInitialize>) -> Result<u64> {
-        msg!("Entered adapter_abi::initialize dummy instruction");
-        Ok(1)
-    }
 }
