@@ -1,4 +1,4 @@
-# Seagull Finance: Vaults
+# Seagull Finance: Vaults (DeFi / University Track)
 Unlocking capital efficiency and speculation markets via a new class of derivatives only possible on Solana.
 
 ## How it Works
