@@ -4,11 +4,11 @@ Document to outline the different procedures inside the vault to aid in implemen
 In both procedures, redemption of J-tokens will only be enabled once all vaults have `adaptes_verified` set to true, or the vault is expired.
 
 ## Initial Setup of a Vault Group and Vault
-- **Step 1:** `vaults::init_group` to create the vault group for a specific `j_mint`
+- **Step 1:** `vaults::init_group` to create the vault group for a specific `base_mint`
   - Note that in this stage the vault group has no adapters registered and is in Halted mode. Attempting to exit halted mode will fail.
 - **Step 2:** `vaults::edit_group` to add adapter programs with a ratio that sums to 1.
   - Note that adapters can never be removed, only added. If any change is made to the adapter list all vaults are frozen until they are verified to have all adapters initialized by running `vaults::edit_vault`.
-- **Step 3:** `vaults::init_vault` to create a vault with a new `i_mint`, `start_timestamp`, and `end_timestamp`
+- **Step 3:** `vaults::init_vault` to create a vault with a new `_mint`, `start_timestamp`, and `end_timestamp`
   - This vault will have `adaptes_verified` set to false.
 - **Step 4:** For each adapter program listed inside the vault group, `adapter::initialize` should be executed to set up the adapter for the vault.
 - **Step 5:** `vaults::edit_vault` since `adaptes_verified` is initialized to **false**, all optional params can be left unset. If all adapter accounts are found and initialized then `adaptes_verified` will be set to **true**.

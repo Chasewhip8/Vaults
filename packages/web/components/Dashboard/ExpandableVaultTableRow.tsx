@@ -31,7 +31,7 @@ const ExpandableVaultTableRow = (props: Props) => {
             />
           </button>
         </TableCell>
-        <TableCell className="font-bold">J-{row.vault}</TableCell>
+        <TableCell className="font-bold">Base-{row.vault}</TableCell>
         <TableCell className="italic">{row.expiration}</TableCell>
         <TableCell>{row.amount}</TableCell>
         <TableCell>{row.amountDollar}</TableCell>
@@ -39,33 +39,33 @@ const ExpandableVaultTableRow = (props: Props) => {
       </TableRow>
       {isExpanded ? (
         <>
-          <TableRow key={`I-${row.vault}-Q1`}>
+          <TableRow key={`Yield-${row.vault}-Q1`}>
             <TableCell></TableCell>
-            <TableCell className="font-bold">I-{row.vault}-Q1</TableCell>
+            <TableCell className="font-bold">Yield-{row.vault}-Q1</TableCell>
             <TableCell className="italic">{row.expiration}</TableCell>
             <TableCell>{row.amount}</TableCell>
             <TableCell>{row.amountDollar}</TableCell>
             <TableCell>{row.percentChange}</TableCell>
           </TableRow>
-          <TableRow key={`I-${row.vault}-Q1`}>
+          <TableRow key={`Yield-${row.vault}-Q1`}>
             <TableCell></TableCell>
-            <TableCell className="font-bold">I-{row.vault}-Q2</TableCell>
+            <TableCell className="font-bold">Yield-{row.vault}-Q2</TableCell>
             <TableCell className="italic">{row.expiration}</TableCell>
             <TableCell>{row.amount}</TableCell>
             <TableCell>{row.amountDollar}</TableCell>
             <TableCell>{row.percentChange}</TableCell>
           </TableRow>
-          <TableRow key={`I-${row.vault}-Q1`}>
+          <TableRow key={`Yield-${row.vault}-Q1`}>
             <TableCell></TableCell>
-            <TableCell className="font-bold">I-{row.vault}-Q3</TableCell>
+            <TableCell className="font-bold">Yield-{row.vault}-Q3</TableCell>
             <TableCell className="italic">{row.expiration}</TableCell>
             <TableCell>{row.amount}</TableCell>
             <TableCell>{row.amountDollar}</TableCell>
             <TableCell>{row.percentChange}</TableCell>
           </TableRow>
-          <TableRow key={`I-${row.vault}-Q1`}>
+          <TableRow key={`Yield-${row.vault}-Q1`}>
             <TableCell></TableCell>
-            <TableCell className="font-bold">I-{row.vault}-Q4</TableCell>
+            <TableCell className="font-bold">Yield-{row.vault}-Q4</TableCell>
             <TableCell className="italic">{row.expiration}</TableCell>
             <TableCell>{row.amount}</TableCell>
             <TableCell>{row.amountDollar}</TableCell>

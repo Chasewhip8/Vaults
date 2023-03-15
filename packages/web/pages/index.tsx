@@ -78,7 +78,7 @@ const Home = () => {
             title="Hottest Product"
             icon={FireIcon}
             iconBackgroundColor="bg-yellow-600"
-            value="J-Sol-Eth"
+            value="Base-Sol-Eth"
             trend="up"
             trendDescription={
               <p className="text-gray-400">
