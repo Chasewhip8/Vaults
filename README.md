@@ -1,4 +1,4 @@
-# Vaults V2
+# Seagull Finance: Vaults
 Unlocking capital efficiency and speculation markets via a new class of derivatives only possible on Solana.
 
 ## Technical Information
