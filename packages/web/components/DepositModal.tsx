@@ -36,6 +36,7 @@ const DepositModal = (props: DepositProps) => {
     );
   }, [connection, wallet]);
 
+  // @ts-ignore
   return (
     <Modal
       className="flex flex-col bg-slate-800 text-white"
@@ -68,6 +69,7 @@ const DepositModal = (props: DepositProps) => {
               type="text"
               name="Dual-Asset Deposit"
               id="deposit-amount"
+              // @ts-ignore
               value={asset1DepositAmount}
               onChange={(event) =>
                 setAsset1DepositAmount(event.target.value)
@@ -84,6 +86,7 @@ const DepositModal = (props: DepositProps) => {
               
               name="Deposit"
               id="deposit-amount"
+              // @ts-ignore
               value={asset2DepositAmount}
             />
           </div>
